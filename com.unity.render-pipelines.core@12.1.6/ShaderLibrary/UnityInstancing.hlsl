@@ -359,12 +359,12 @@
 
     // added
     #ifndef UNITY_DONT_INSTANCE_OBJECT_MATRICES
-        #define unity_ObjectToWorld UNITY_ACCESS_INSTANCED_PROP(unity_Builtins0, unity_ObjectToWorldArray)
+        #define unity_ObjectToWorld     UNITY_ACCESS_INSTANCED_PROP(unity_Builtins0, unity_ObjectToWorldArray)
         #define MERGE_UNITY_BUILTINS_INDEX(X) unity_Builtins##X
         #define unity_WorldToObject     UNITY_ACCESS_INSTANCED_PROP(MERGE_UNITY_BUILTINS_INDEX(UNITY_WORLDTOOBJECTARRAY_CB), unity_WorldToObjectArray)
 
 
-        #define UnityObjectToClipPos UnityObjectToClipPosInstanced2
+        #define UnityObjectToClipPos UnityObjectToClipPosInstanced
     #endif
 
     UNITY_INSTANCING_BUFFER_START(PerDraw3)

@@ -148,8 +148,11 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
   #endif
   LightingStandard_GI(o, giInput, gi);
 
+
   #ifdef BAKERY_SH
-    BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, 1.0 - o.Smoothness);
+    half roughness = 1.0f - o.Smoothness;
+    roughness = roughness*roughness;
+    BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
   #endif
 
   // realtime lighting: call lighting function

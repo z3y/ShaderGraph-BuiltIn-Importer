@@ -75,8 +75,15 @@ void MetaVertex(Attributes input, VertexDescription vertexDescription, inout Var
     appdata_full v;
     ZERO_INITIALIZE(appdata_full, v);
     BuildAppDataFull(input, vertexDescription, v);
-
+#if UNITY_ANY_INSTANCING_ENABLED
+    v.instanceID = input.instanceID;
+    #endif
     v2f_surf o = MetaVertex(v);
+
+    #if UNITY_ANY_INSTANCING_ENABLED
+    varyings.instanceID = o.instanceID;
+    #endif
+    
     SurfaceVertexToVaryings(o, varyings);
 }
 
@@ -129,6 +136,9 @@ PackedVaryings vert(Attributes input)
 {
     Varyings output;
     ZERO_INITIALIZE(Varyings, output);
+    #if UNITY_ANY_INSTANCING_ENABLED
+    vertexSurf.instanceID = varyings.instanceID;
+    #endif
     output = BuildVaryings(input);
 
     VertexDescriptionInputs vertexDescriptionInputs = BuildVertexDescriptionInputs(input);

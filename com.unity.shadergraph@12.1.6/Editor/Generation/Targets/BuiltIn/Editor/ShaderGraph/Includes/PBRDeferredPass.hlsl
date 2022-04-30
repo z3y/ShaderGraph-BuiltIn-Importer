@@ -45,8 +45,14 @@ void PBRDeferredVertex(Attributes input, VertexDescription vertexDescription, in
     appdata_full v;
     ZERO_INITIALIZE(appdata_full, v);
     BuildAppDataFull(input, vertexDescription, v);
+    #if UNITY_ANY_INSTANCING_ENABLED
+    v.instanceID = input.instanceID;
+    #endif
 
     v2f_surf o = PBRDeferredVertex(v);
+    #if UNITY_ANY_INSTANCING_ENABLED
+    varyings.instanceID = o.instanceID;
+    #endif
     SurfaceVertexToVaryings(o, varyings);
 }
 
@@ -138,6 +144,9 @@ FragmentOutput PBRDeferredFragment(SurfaceDescription surfaceDescription, InputD
 {
     v2f_surf vertexSurf;
     ZERO_INITIALIZE(v2f_surf, vertexSurf);
+    #if UNITY_ANY_INSTANCING_ENABLED
+    vertexSurf.instanceID = varyings.instanceID;
+    #endif
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 
     SurfaceOutputStandard o = BuildStandardSurfaceOutput(surfaceDescription, inputData);

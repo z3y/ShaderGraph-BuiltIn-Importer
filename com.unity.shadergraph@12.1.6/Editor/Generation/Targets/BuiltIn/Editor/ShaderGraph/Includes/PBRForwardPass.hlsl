@@ -78,6 +78,10 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
     SurfaceVertexToVaryings(o, varyings);
 }
 
+#if !defined(LIGHTMAP_ON) && defined(BAKERY_SH)
+#undef BAKERY_SH
+#endif
+
 #ifdef BAKERY_SH
 #include "Packages/com.unity.shadergraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Bakery.hlsl"
 #endif

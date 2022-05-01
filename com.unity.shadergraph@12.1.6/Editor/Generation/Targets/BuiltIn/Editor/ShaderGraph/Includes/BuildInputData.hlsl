@@ -21,7 +21,9 @@ void BuildInputData(Varyings input, SurfaceDescription surfaceDescription, out I
         inputData.normalWS = input.normalWS;
     #endif
     inputData.normalWS = NormalizeNormalPerPixel(inputData.normalWS);
-    inputData.viewDirectionWS = SafeNormalize(input.viewDirectionWS);
+
+// not needed
+//    inputData.viewDirectionWS = SafeNormalize(input.viewDirectionWS);
 
     #if defined(REQUIRES_VERTEX_SHADOW_COORD_INTERPOLATOR)
         inputData.shadowCoord = input.shadowCoord;

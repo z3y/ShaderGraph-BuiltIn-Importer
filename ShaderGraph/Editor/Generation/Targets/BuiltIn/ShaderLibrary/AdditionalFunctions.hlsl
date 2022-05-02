@@ -90,11 +90,11 @@ half3 GetReflections(float3 normalWS, float3 positionWS, float3 viewDir, half3 f
 
         float horizon = min(1.0 + dot(reflDir, normalWS), 1.0);
         
-        // half lightmapOcclusion = lerp(1.0, saturate(dot(indirectDiffuse, 1.0)), _SpecularOcclusion);
+        half lightmapOcclusion = lerp(1.0, saturate(dot(indirectDiffuse, 1.0)), 1);
 
-        // #ifdef LIGHTMAP_ON || defined(DYNAMICLIGHTMAP_ON)
-        //     occlusion *= lightmapOcclusion;
-        // #endif
+        #if defined(LIGHTMAP_ON) || defined(DYNAMICLIGHTMAP_ON)
+            occlusion *= lightmapOcclusion;
+        #endif
         indirectSpecular *= horizon * horizon;
 
         indirectSpecular *= computeSpecularAO(NoV, occlusion, perceptualRoughness * perceptualRoughness);

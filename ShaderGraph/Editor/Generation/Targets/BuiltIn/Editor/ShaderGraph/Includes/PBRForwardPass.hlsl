@@ -173,9 +173,11 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
 half3 indirectSpecular = 0;
   half perceptualRoughness = 1.0f - o.Smoothness;
   half roughness = perceptualRoughness*perceptualRoughness;
+
+  half3 lightmappedSpecular = 0;
   #ifdef BAKERY_SH
     #ifdef USE_DFG_MULTISCATTER
-      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, indirectSpecular, o.Normal, giInput.worldViewDir, roughness);
+      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, lightmappedSpecular, o.Normal, giInput.worldViewDir, roughness);
     #else
       BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
     #endif
@@ -191,8 +193,8 @@ half3 indirectSpecular = 0;
     #endif
   #endif
 
-
   #ifdef USE_DFG_MULTISCATTER
+    indirectSpecular += lightmappedSpecular;
     #ifdef SHADER_API_MOBILE
         indirectSpecular *= EnvBRDFApprox(perceptualRoughness, NoV, f0);
     #else

@@ -82,7 +82,7 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
 #undef BAKERY_SH
 #endif
 
-#ifdef BAKERY_SH
+#if defined(BAKERY_SH) || defined(BAKERY_PROBESHNONLINEAR)
 #include "Packages/com.unity.shadergraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Bakery.hlsl"
 #endif
 
@@ -153,11 +153,19 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
   LightingStandard_GI(o, giInput, gi);
 
 
+  #if defined(BAKERY_PROBESHNONLINEAR) && !defined(LIGHTMAP_ON)
+  float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+        gi.indirect.diffuse.r = shEvaluateDiffuseL1Geomerics(L0.r, unity_SHAr.xyz, o.Normal);
+        gi.indirect.diffuse.g = shEvaluateDiffuseL1Geomerics(L0.g, unity_SHAg.xyz, o.Normal);
+        gi.indirect.diffuse.b = shEvaluateDiffuseL1Geomerics(L0.b, unity_SHAb.xyz, o.Normal);
+  #endif
+
   #ifdef BAKERY_SH
     half roughness = 1.0f - o.Smoothness;
     roughness = roughness*roughness;
     BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
   #endif
+  
 
   // realtime lighting: call lighting function
   c += LightingStandard (o, worldViewDir, gi);

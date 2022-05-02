@@ -140,6 +140,22 @@ namespace ShaderGraphImporter
                 else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                 {
                     input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
+                    input[index] += '\n' + "[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                }
+
+                else if (trimmed.Equals("Blend SrcAlpha One, One One\"", StringComparison.Ordinal))
+                {
+                    // forward add fix and additional options
+                    input[index] = "Blend [_BUILTIN_SrcBlend] One";
+                    input[index] += '\n' + "Cull [_Cull]";
+                    input[index] += '\n' + "ZTest LEqual";
+                    input[index] += '\n' + "Fog { Color (0,0,0,0) }";
+                    input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                }
+
+                else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal))
+                {
+                    input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
 
             }

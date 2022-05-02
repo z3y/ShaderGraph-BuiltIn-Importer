@@ -7,7 +7,13 @@ SurfaceData SurfaceDescriptionToSurfaceData(SurfaceDescription surfaceDescriptio
 {
     #if _AlphaClip
        half alpha = surfaceDescription.Alpha;
-       clip(alpha - surfaceDescription.AlphaClipThreshold);
+
+       #if 1
+            alpha = (alpha - surfaceDescription.AlphaClipThreshold) / max(fwidth(alpha), 0.0001) + 0.5;
+       #else 
+            clip(alpha - surfaceDescription.AlphaClipThreshold);
+       #endif
+
     #elif _SURFACE_TYPE_TRANSPARENT
        half alpha = surfaceDescription.Alpha;
     #else

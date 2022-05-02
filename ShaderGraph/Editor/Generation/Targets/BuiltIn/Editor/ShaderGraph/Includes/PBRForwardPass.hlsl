@@ -86,6 +86,8 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Bakery.hlsl"
 #endif
 
+#define USE_DFG_MULTISCATTER
+
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/AdditionalFunctions.hlsl"
 
 half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
@@ -154,6 +156,11 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
   #endif
   LightingStandard_GI(o, giInput, gi);
 
+  //#ifdef _GLOSSYREFLECTIONS_OFF
+  #ifdef USE_DFG_MULTISCATTER
+    gi.indirect.specular = 0;// using custom indirect specular
+  #endif
+
 
   #if defined(BAKERY_PROBESHNONLINEAR) && !defined(LIGHTMAP_ON)
   float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
@@ -162,16 +169,44 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
         gi.indirect.diffuse.b = shEvaluateDiffuseL1Geomerics(L0.b, unity_SHAb.xyz, o.Normal);
   #endif
 
+
+half3 indirectSpecular = 0;
+  half perceptualRoughness = 1.0f - o.Smoothness;
+  half roughness = perceptualRoughness*perceptualRoughness;
   #ifdef BAKERY_SH
-    half roughness = 1.0f - o.Smoothness;
-    roughness = roughness*roughness;
-    BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
+    #ifdef USE_DFG_MULTISCATTER
+      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, indirectSpecular, o.Normal, giInput.worldViewDir, roughness);
+    #else
+      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
+    #endif
   #endif
+
+
+  #ifdef USE_DFG_MULTISCATTER
+    half3 f0 = GetF0(o.Metallic, o.Albedo);
+    half NoV = saturate(dot(o.Normal, worldViewDir));
+    // half NoV = abs(dot(o.Normal, worldViewDir)) + 1e-5f;
+    #ifndef _GLOSSYREFLECTIONS_OFF
+      indirectSpecular = GetReflections(o.Normal, worldPos, worldViewDir, f0, roughness, NoV, gi.indirect.diffuse, o.Occlusion);
+    #endif
+  #endif
+
+
+  #ifdef USE_DFG_MULTISCATTER
+    #ifdef SHADER_API_MOBILE
+        indirectSpecular *= EnvBRDFApprox(perceptualRoughness, NoV, f0);
+    #else
+        float2 DFGLut = SampleDFG(NoV, perceptualRoughness).rg;
+        half3 DFGEnergyCompensation = EnvBRDFEnergyCompensation(DFGLut, f0);
+        indirectSpecular *= DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
+    #endif
+#endif
+
 
 
   // realtime lighting: call lighting function
   c += LightingStandard (o, worldViewDir, gi);
-  c.rgb += o.Emission;
+  c.rgb += o.Emission + indirectSpecular;
   UNITY_APPLY_FOG(_unity_fogCoord, c); // apply fog
   #ifndef _SURFACE_TYPE_TRANSPARENT
   UNITY_OPAQUE_ALPHA(c.a);

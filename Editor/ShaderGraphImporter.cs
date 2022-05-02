@@ -137,6 +137,10 @@ namespace ShaderGraphImporter
                 {
                     input[index] = "CustomEditor \"" + (customEditor == "" ? DefaultEditor : customEditor) + "\"";
                 }
+                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
+                {
+                    input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
+                }
 
             }
         }
@@ -155,9 +159,21 @@ namespace ShaderGraphImporter
             {
                 System.IO.Directory.CreateDirectory(ImportPath);
             }
-            File.WriteAllLines(ImportPath + fileName + ".shader", fileLines);
+            string shaderPath = ImportPath + fileName + ".shader";
+            File.WriteAllLines(shaderPath, fileLines);
 
             AssetDatabase.Refresh();
+
+            ApplyDFG(shaderPath);
+        }
+
+        const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
+        private static void ApplyDFG(string shaderPath)
+        {
+            var texture = AssetDatabase.LoadAssetAtPath(DFGLutPath, typeof(Texture2D)) as Texture2D;
+
+            var importer = ShaderImporter.GetAtPath(shaderPath) as ShaderImporter;
+            importer.SetNonModifiableTextures(new[] { "_DFG" }, new[] { texture });
         }
     }
 }

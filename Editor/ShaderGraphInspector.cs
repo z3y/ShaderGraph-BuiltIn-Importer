@@ -43,11 +43,14 @@ namespace ShaderGraphImporter
         private static bool surfaceOptionsFoldout = true;
         private static bool surfaceInputsFoldout = true;
 
+        private int propCount = 0;
+
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
 
-            if (_firstTime)
+            if (_firstTime || propCount != properties.Length)
             {
+                propCount = properties.Length;
                 _shader = (materialEditor.target as Material).shader;
                 _hasOverrideProperties = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_Surface", StringComparison.Ordinal)) != -1;
 
@@ -59,6 +62,8 @@ namespace ShaderGraphImporter
                 _BUILTIN_ZWrite = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_ZWrite", StringComparison.Ordinal));
                 _BUILTIN_ZTest = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_ZTest", StringComparison.Ordinal));
                 _BUILTIN_CullMode = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_CullMode", StringComparison.Ordinal));
+
+                _firstTime = false;
             }
 
             EditorGUI.indentLevel++;

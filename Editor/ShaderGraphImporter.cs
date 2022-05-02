@@ -127,7 +127,7 @@ namespace ShaderGraphImporter
                 }
                 else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZTest", StringComparison.Ordinal))
                 {
-                    input[index] = "[Enum(Off, 0, On, 1)] " + input[index];
+                    input[index] = "[Enum(UnityEngine.Rendering.CompareFunction)]" + input[index];
                 }
                 else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_CullMode", StringComparison.Ordinal))
                 {

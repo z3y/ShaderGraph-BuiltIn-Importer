@@ -86,6 +86,11 @@ public class ShaderGraphImporter : EditorWindow
                     input[index] = input[index].Replace(ReplaceShaderGraphLibrary[0], ReplaceShaderGraphLibrary[1]);
                 }
 
+                else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
+                {
+                    input[index] = input[index] + '\n' + "#pragma multi_compile_instancing";
+                }
+
             }
         }
     }

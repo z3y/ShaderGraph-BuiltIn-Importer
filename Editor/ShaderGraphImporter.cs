@@ -54,18 +54,38 @@ public class ShaderGraphImporter : EditorWindow
         "#pragma multi_compile _ _CASTING_PUNCTUAL_LIGHT_SHADOW"
     };
 
+    private static readonly string[] ReplaceCoreRP =
+    {
+        "#include \"Packages/com.unity.render-pipelines.core/",
+        "#include \"Packages/com.z3y.shadergraph-builtin/CoreRP/"
+    };
+
+    private static readonly string[] ReplaceShaderGraphLibrary =
+    {
+        "#include \"Packages/com.unity.shadergraph/",
+        "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
+    };
+
     private static void ReplaceWithEmpty(ref string[] input, string[] replaceLines)
     {
         foreach (var replaceLine in replaceLines)
         {
             for (var index = 0; index < input.Length; index++)
             {
-                if (!input[index].TrimStart().StartsWith(replaceLine, StringComparison.Ordinal))
+                var trimmed = input[index].TrimStart();
+                if (trimmed.StartsWith(replaceLine, StringComparison.Ordinal))
                 {
-                    continue;
+                    input[index] = string.Empty;
+                }
+                else if (trimmed.StartsWith(ReplaceCoreRP[0], StringComparison.Ordinal))
+                {
+                    input[index] = input[index].Replace(ReplaceCoreRP[0], ReplaceCoreRP[1]);
+                }
+                else if (trimmed.StartsWith(ReplaceShaderGraphLibrary[0], StringComparison.Ordinal))
+                {
+                    input[index] = input[index].Replace(ReplaceShaderGraphLibrary[0], ReplaceShaderGraphLibrary[1]);
                 }
 
-                input[index] = string.Empty;
             }
         }
     }

@@ -6,6 +6,12 @@
 // required (especially for shader graph) in the core SRP library. There are also some duplicate symbols and other complications.
 // This set of files helps to bridge the gap by hiding and redefining some symbols and other helpful declarations.
 
+
+// built-in uses a different keyword, fix for SPI
+#if defined(STEREO_INSTANCING_ON)
+    #define UNITY_STEREO_INSTANCING_ENABLED
+#endif
+
 #include "Packages/com.unity.render-pipelines.core/ShaderLibrary/Common.hlsl"
 
 // Duplicate define in Macros.hlsl

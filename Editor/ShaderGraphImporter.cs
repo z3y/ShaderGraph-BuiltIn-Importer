@@ -178,7 +178,7 @@ namespace ShaderGraphImporter
                     input[index] = sb.ToString() + '\n' + input[index];
                 }
 
-                else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal))
+                else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
                     if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }

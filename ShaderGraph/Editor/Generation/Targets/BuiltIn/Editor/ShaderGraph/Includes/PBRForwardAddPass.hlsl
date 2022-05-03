@@ -73,7 +73,7 @@ half4 PBRForwardAddFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
     gi.light.dir = lightDir;
     gi.light.color *= atten;
     c += LightingStandard (o, worldViewDir, gi);
-    c.a = 0.0;
+    //c.a = 0.0;
     UNITY_APPLY_FOG(_unity_fogCoord, c); // apply fog
     #if !defined(PREDEFINED_A2C) && !defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) && !defined(_BUILTIN_AlphaClip) 
     UNITY_OPAQUE_ALPHA(c.a);

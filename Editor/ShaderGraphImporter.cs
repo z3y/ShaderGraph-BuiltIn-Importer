@@ -158,7 +158,7 @@ namespace ShaderGraphImporter
                 {
                     // forward add fix and additional options
                     input[index] = "Blend [_BUILTIN_SrcBlend] One";
-                    input[index] += '\n' + "Cull [_Cull]";
+                    input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
                     input[index] += '\n' + "ZTest LEqual";
                     input[index] += '\n' + "Fog { Color (0,0,0,0) }";
                     if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";

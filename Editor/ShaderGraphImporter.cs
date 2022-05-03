@@ -38,9 +38,9 @@ namespace ShaderGraphImporter
                 ImportShader(ref code, _customEditor);
             }
 
-            useAlphaToCoverage = GUILayout.Toggle(useAlphaToCoverage, "Alpha To Coverage");
-            useDFGMultiscatter = GUILayout.Toggle(useDFGMultiscatter, "DFG Multiscatter");
-            _customEditor = GUILayout.TextField(_customEditor);
+            useAlphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", useAlphaToCoverage);
+            useDFGMultiscatter = EditorGUILayout.ToggleLeft("DFG Multiscatter", useDFGMultiscatter);
+            _customEditor = EditorGUILayout.TextField("Custom Editor", _customEditor);
             //_shaderCodeEditor = GUILayout.TextArea(_shaderCodeEditor, GUILayout.Height(200));
 
 

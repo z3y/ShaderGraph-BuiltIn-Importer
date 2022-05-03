@@ -34,8 +34,8 @@ namespace ShaderGraphImporter
         {
             if (GUILayout.Button("Paste & Import"))
             {
-                //_shaderCodeEditor = GUIUtility.systemCopyBuffer;
-                ImportShader(GUIUtility.systemCopyBuffer, _customEditor);
+                string code = GUIUtility.systemCopyBuffer;
+                ImportShader(ref code, _customEditor);
             }
 
             useAlphaToCoverage = GUILayout.Toggle(useAlphaToCoverage, "Alpha To Coverage");
@@ -49,7 +49,7 @@ namespace ShaderGraphImporter
 
         private const string ImportPath = "Assets/ShaderGraph/";
 
-        private static readonly string[] FixUnityBug =
+        private static readonly string[] ReplaceLines =
         {
             "CustomEditorForRenderPipeline",
             "#pragma multi_compile _ _SCREEN_SPACE_OCCLUSION",
@@ -78,94 +78,79 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
 
-        private static void FixBugs(ref string[] input, string[] replaceLines, string customEditor)
+        private static void EditShaderFile(ref string[] input, string customEditor)
         {
             var predefined = new List<string>();
 
             if (useAlphaToCoverage) predefined.Add("#define PREDEFINED_A2C");
             if (useDFGMultiscatter) predefined.Add("#define PREDEFINED_DFGMULTISCATTER");
 
+            bool parsingProperties = true;
+
             for (var index = 0; index < input.Length; index++)
             {
                 var trimmed = input[index].TrimStart();
 
-                foreach (var replaceLine in replaceLines)
-                {
-                    if (trimmed.StartsWith(replaceLine, StringComparison.Ordinal))
-                    {
-                        input[index] = string.Empty;
-                    }
-                }
 
+                // replace hlsl include paths
                 if (trimmed.StartsWith(ReplaceCoreRP[0], StringComparison.Ordinal))
                 {
                     input[index] = input[index].Replace(ReplaceCoreRP[0], ReplaceCoreRP[1]);
                 }
-
                 else if (trimmed.StartsWith(ReplaceShaderGraphLibrary[0], StringComparison.Ordinal))
                 {
                     input[index] = input[index].Replace(ReplaceShaderGraphLibrary[0], ReplaceShaderGraphLibrary[1]);
                 }
 
-                else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
+
+                if (parsingProperties)
                 {
-                    input[index] = input[index] + '\n' + "#pragma multi_compile_instancing";
+                    // just adds attributes for the inspector, could be done differently
+                    if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Surface", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(ShaderGraphImporter.SurfaceType)]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Blend", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(ShaderGraphImporter.BlendingMode)]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_AlphaClip", StringComparison.Ordinal))
+                    {
+                        input[index] = "[ToggleUI]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_SrcBlend", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_DstBlend", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZWrite", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(Off, 0, On, 1)] " + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZTest", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(UnityEngine.Rendering.CompareFunction)]" + input[index];
+                    }
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_CullMode", StringComparison.Ordinal))
+                    {
+                        input[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + input[index];
+                    }
+
+                    // alpha to coverage property
+                    else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
+                    {
+                        input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
+                        input[index] += '\n' + "[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                    }
                 }
 
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Surface", StringComparison.Ordinal))
+                // predefined keywords
+                if (trimmed.Equals("SubShader", StringComparison.Ordinal))
                 {
-                    input[index] = "[Enum(ShaderGraphImporter.SurfaceType)]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Blend", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(ShaderGraphImporter.BlendingMode)]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_AlphaClip", StringComparison.Ordinal))
-                {
-                    input[index] = "[ToggleUI]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_SrcBlend", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_DstBlend", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZWrite", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(Off, 0, On, 1)] " + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZTest", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(UnityEngine.Rendering.CompareFunction)]" + input[index];
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_CullMode", StringComparison.Ordinal))
-                {
-                    input[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + input[index];
-                }
-                else if (trimmed.StartsWith("CustomEditor \"", StringComparison.Ordinal))
-                {
-                    input[index] = "CustomEditor \"" + (customEditor == "" ? DefaultEditor : customEditor) + "\"";
-                }
-                else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
-                {
-                    input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
-                    input[index] += '\n' + "[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
-                }
-
-                else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
-                {
-                    // forward add fix and additional options
-                    input[index] = "Blend [_BUILTIN_SrcBlend] One";
-                    input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
-                    input[index] += '\n' + "ZTest LEqual";
-                    input[index] += '\n' + "Fog { Color (0,0,0,0) }";
-                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
-                }
-
-                else if (trimmed.Equals("SubShader", StringComparison.Ordinal))
-                {
+                    parsingProperties = false;
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
 
                     for (int j = 0; j < predefined.Count; j++)
@@ -178,15 +163,45 @@ namespace ShaderGraphImporter
                     input[index] = sb.ToString() + '\n' + input[index];
                 }
 
+
+                // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
                     if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
+                else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
+                {
+                    input[index] = "Blend [_BUILTIN_SrcBlend] One";
+                    input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
+                    input[index] += '\n' + "ZTest LEqual";
+                    input[index] += '\n' + "Fog { Color (0,0,0,0) }";
+                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                }
+                else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
+                {
+                    // multicompile missing
+                    input[index] = input[index] + '\n' + "#pragma multi_compile_instancing";
+                }
+                // remove unneeded multicompiles
+                foreach (var replaceLine in ReplaceLines)
+                {
+                    if (trimmed.StartsWith(replaceLine, StringComparison.Ordinal))
+                    {
+                        input[index] = string.Empty;
+                    }
+                }
+
+                // replace custom editor with default editor
+                if (trimmed.StartsWith("CustomEditor \"", StringComparison.Ordinal))
+                {
+                    input[index] = "CustomEditor \"" + (customEditor == "" ? DefaultEditor : customEditor) + "\"";
+                }
+
 
             }
         }
 
-        private static void ImportShader(string shaderCode, string customEditor = "")
+        private static void ImportShader(ref string shaderCode, string customEditor = "")
         {
             var fileLines = shaderCode.Split('\n');
 
@@ -194,7 +209,7 @@ namespace ShaderGraphImporter
 
             fileLines[0] = $"Shader \"Shader Graphs/{fileName}\"";
 
-            FixBugs(ref fileLines, FixUnityBug, customEditor);
+            EditShaderFile(ref fileLines, customEditor);
 
             if (!Directory.Exists(ImportPath))
             {

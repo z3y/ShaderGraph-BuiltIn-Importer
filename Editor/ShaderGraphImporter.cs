@@ -40,8 +40,6 @@ namespace ShaderGraphImporter
 
             useAlphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", useAlphaToCoverage);
             useDFGMultiscatter = EditorGUILayout.ToggleLeft("DFG Multiscatter", useDFGMultiscatter);
-            //_customEditor = EditorGUILayout.TextField("Custom Editor", _customEditor);
-            //_shaderCodeEditor = GUILayout.TextArea(_shaderCodeEditor, GUILayout.Height(200));
 
 
 
@@ -79,12 +77,10 @@ namespace ShaderGraphImporter
 
         private static void EditShaderFile(ref string[] input)
         {
-            var predefined = new List<string>();
-
-            if (useAlphaToCoverage) predefined.Add("#define PREDEFINED_A2C");
-            if (useDFGMultiscatter) predefined.Add("#define PREDEFINED_DFGMULTISCATTER");
+            
 
             bool parsingProperties = true;
+            bool materialOverrideOn = false;
 
             for (var index = 0; index < input.Length; index++)
             {
@@ -107,6 +103,7 @@ namespace ShaderGraphImporter
                     // just adds attributes for the inspector, could be done differently
                     if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Surface", StringComparison.Ordinal))
                     {
+                        materialOverrideOn = true;
                         input[index] = "[Enum(ShaderGraphImporter.SurfaceType)]" + input[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Blend", StringComparison.Ordinal))
@@ -138,7 +135,7 @@ namespace ShaderGraphImporter
                         input[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + input[index];
                     }
 
-                    // alpha to coverage property
+                    // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                     {
                         input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
@@ -150,8 +147,15 @@ namespace ShaderGraphImporter
                 if (trimmed.Equals("SubShader", StringComparison.Ordinal))
                 {
                     parsingProperties = false;
+                    var predefined = new List<string>();
+
+                    if (useAlphaToCoverage && materialOverrideOn) predefined.Add("#define PREDEFINED_A2C");
+                    if (useDFGMultiscatter) predefined.Add("#define PREDEFINED_DFGMULTISCATTER");
+
+
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
 
+                    
                     for (int j = 0; j < predefined.Count; j++)
                     {
                         sb.AppendLine(predefined[j]);
@@ -166,15 +170,16 @@ namespace ShaderGraphImporter
                 // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
-                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (useAlphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
-                    input[index] = "Blend [_BUILTIN_SrcBlend] One";
-                    input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
-                    input[index] += '\n' + "ZTest LEqual";
+                    // forward add pass
+                    if (materialOverrideOn) input[index] = "Blend [_BUILTIN_SrcBlend] One";
+                    if (materialOverrideOn) input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
+                    if (materialOverrideOn) input[index] += '\n' + "ZTest LEqual";
                     input[index] += '\n' + "Fog { Color (0,0,0,0) }";
-                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (useAlphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
                 {

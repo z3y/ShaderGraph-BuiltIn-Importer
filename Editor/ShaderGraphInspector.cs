@@ -88,9 +88,10 @@ namespace ShaderGraphImporter
                     materialEditor.ShaderProperty(properties[_BUILTIN_CullMode], new GUIContent("Cull"));
                     materialEditor.ShaderProperty(properties[_BUILTIN_AlphaClip], new GUIContent("Alpha Clipping"));
 
-                    if (properties[_BUILTIN_AlphaClip].floatValue == 1)
+                    bool alphaToMaskEnabled = false;
+                    if (properties[_BUILTIN_AlphaClip].floatValue == 1 && _AlphaToMask >= 0)
                     {
-                        materialEditor.ShaderProperty(properties[_AlphaToMask], new GUIContent("Alpha To Coverage"));
+                        alphaToMaskEnabled = true;
                     }
 
 
@@ -101,7 +102,7 @@ namespace ShaderGraphImporter
                         foreach (var o in materialEditor.targets)
                         {
                             var m = (Material)o;
-                            SetupMaterialRenderingMode(m, type, (BlendingMode)properties[_BUILTIN_Blend].floatValue, properties[_BUILTIN_AlphaClip].floatValue == 1, properties[_AlphaToMask].floatValue == 1);
+                            SetupMaterialRenderingMode(m, type, (BlendingMode)properties[_BUILTIN_Blend].floatValue, properties[_BUILTIN_AlphaClip].floatValue == 1, alphaToMaskEnabled);
                         }
                     }
 
@@ -178,11 +179,6 @@ namespace ShaderGraphImporter
                 if (alphaToCoverage)
                 {
                     material.SetInt("_AlphaToMask", 1);
-                    material.EnableKeyword("_ALPHA_TO_COVERAGE");
-                }
-                else
-                {
-                    material.DisableKeyword("_ALPHA_TO_COVERAGE");
                 }
             }
             else

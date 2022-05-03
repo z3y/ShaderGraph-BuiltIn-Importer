@@ -86,7 +86,10 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Bakery.hlsl"
 #endif
 
-#define USE_DFG_MULTISCATTER
+
+#ifdef SHADER_API_MOBILE
+  #undef PREDEFINED_DFGMULTISCATTER
+#endif
 
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/AdditionalFunctions.hlsl"
 
@@ -156,8 +159,7 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
   #endif
   LightingStandard_GI(o, giInput, gi);
 
-  //#ifdef _GLOSSYREFLECTIONS_OFF
-  #ifdef USE_DFG_MULTISCATTER
+  #ifdef PREDEFINED_DFGMULTISCATTER
     gi.indirect.specular = 0;// using custom indirect specular
   #endif
 
@@ -176,7 +178,7 @@ half3 indirectSpecular = 0;
 
   half3 lightmappedSpecular = 0;
   #ifdef BAKERY_SH
-    #ifdef USE_DFG_MULTISCATTER
+    #ifdef PREDEFINED_DFGMULTISCATTER
       BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, lightmappedSpecular, o.Normal, giInput.worldViewDir, roughness);
     #else
       BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
@@ -184,7 +186,7 @@ half3 indirectSpecular = 0;
   #endif
 
 
-  #ifdef USE_DFG_MULTISCATTER
+  #ifdef PREDEFINED_DFGMULTISCATTER
     half3 f0 = GetF0(o.Metallic, o.Albedo);
     half NoV = saturate(dot(o.Normal, worldViewDir));
     // half NoV = abs(dot(o.Normal, worldViewDir)) + 1e-5f;
@@ -193,15 +195,11 @@ half3 indirectSpecular = 0;
     #endif
   #endif
 
-  #ifdef USE_DFG_MULTISCATTER
+  #ifdef PREDEFINED_DFGMULTISCATTER
     indirectSpecular += lightmappedSpecular;
-    #ifdef SHADER_API_MOBILE
-        indirectSpecular *= EnvBRDFApprox(perceptualRoughness, NoV, f0);
-    #else
-        float2 DFGLut = SampleDFG(NoV, perceptualRoughness).rg;
-        half3 DFGEnergyCompensation = EnvBRDFEnergyCompensation(DFGLut, f0);
-        indirectSpecular *= DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
-    #endif
+    float2 DFGLut = SampleDFG(NoV, perceptualRoughness).rg;
+    half3 DFGEnergyCompensation = EnvBRDFEnergyCompensation(DFGLut, f0);
+    indirectSpecular *= DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
 #endif
 
 
@@ -210,7 +208,7 @@ half3 indirectSpecular = 0;
   c += LightingStandard (o, worldViewDir, gi);
   c.rgb += o.Emission + indirectSpecular;
   UNITY_APPLY_FOG(_unity_fogCoord, c); // apply fog
-  #if !defined(_ALPHA_TO_COVERAGE) && !defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT)
+  #if !defined(PREDEFINED_A2C) && !defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) && !defined(_BUILTIN_AlphaClip)
   UNITY_OPAQUE_ALPHA(c.a);
   #endif
   return c;

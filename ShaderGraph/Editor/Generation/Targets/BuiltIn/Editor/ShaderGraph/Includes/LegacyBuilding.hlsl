@@ -7,7 +7,7 @@ SurfaceData SurfaceDescriptionToSurfaceData(SurfaceDescription surfaceDescriptio
 {
     #if _AlphaClip
        half alpha = surfaceDescription.Alpha;
-       #if defined(UNITY_PASS_SHADOWCASTER) || !defined(_ALPHA_TO_COVERAGE)
+       #if defined(UNITY_PASS_SHADOWCASTER) || !defined(PREDEFINED_A2C)
             clip(alpha - surfaceDescription.AlphaClipThreshold);
         #else
             alpha = (alpha - surfaceDescription.AlphaClipThreshold) / max(fwidth(alpha), 0.0001) + 0.5;

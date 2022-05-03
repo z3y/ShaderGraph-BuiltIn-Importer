@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
@@ -20,22 +21,27 @@ namespace ShaderGraphImporter
             window.Show();
         }
 
-        private static string _shaderCodeEditor = "";
+        //private static string _shaderCodeEditor = "";
         private static string _customEditor = "";
 
         private const string DefaultEditor = "ShaderGraphImporter.DefaultInspector";
+
+        private static bool useAlphaToCoverage = true;
+        private static bool useDFGMultiscatter = true;
 
 
         void OnGUI()
         {
             if (GUILayout.Button("Paste & Import"))
             {
-                _shaderCodeEditor = GUIUtility.systemCopyBuffer;
-                ImportShader(_shaderCodeEditor, _customEditor);
+                //_shaderCodeEditor = GUIUtility.systemCopyBuffer;
+                ImportShader(GUIUtility.systemCopyBuffer, _customEditor);
             }
 
+            useAlphaToCoverage = GUILayout.Toggle(useAlphaToCoverage, "Alpha To Coverage");
+            useDFGMultiscatter = GUILayout.Toggle(useDFGMultiscatter, "DFG Multiscatter");
             _customEditor = GUILayout.TextField(_customEditor);
-            _shaderCodeEditor = GUILayout.TextArea(_shaderCodeEditor, GUILayout.Height(200));
+            //_shaderCodeEditor = GUILayout.TextArea(_shaderCodeEditor, GUILayout.Height(200));
 
 
 
@@ -74,6 +80,11 @@ namespace ShaderGraphImporter
 
         private static void FixBugs(ref string[] input, string[] replaceLines, string customEditor)
         {
+            var predefined = new List<string>();
+
+            if (useAlphaToCoverage) predefined.Add("#define PREDEFINED_A2C");
+            if (useDFGMultiscatter) predefined.Add("#define PREDEFINED_DFGMULTISCATTER");
+
             for (var index = 0; index < input.Length; index++)
             {
                 var trimmed = input[index].TrimStart();
@@ -150,12 +161,26 @@ namespace ShaderGraphImporter
                     input[index] += '\n' + "Cull [_Cull]";
                     input[index] += '\n' + "ZTest LEqual";
                     input[index] += '\n' + "Fog { Color (0,0,0,0) }";
-                    input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                }
+
+                else if (trimmed.Equals("SubShader", StringComparison.Ordinal))
+                {
+                    var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
+
+                    for (int j = 0; j < predefined.Count; j++)
+                    {
+                        sb.AppendLine(predefined[j]);
+                    }
+                    sb.AppendLine("ENDHLSL");
+
+
+                    input[index] = sb.ToString() + '\n' + input[index];
                 }
 
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal))
                 {
-                    input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (useAlphaToCoverage) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
 
             }
@@ -186,6 +211,8 @@ namespace ShaderGraphImporter
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
         private static void ApplyDFG(string shaderPath)
         {
+            if (!useDFGMultiscatter) return;
+
             var texture = AssetDatabase.LoadAssetAtPath(DFGLutPath, typeof(Texture2D)) as Texture2D;
 
             var importer = ShaderImporter.GetAtPath(shaderPath) as ShaderImporter;

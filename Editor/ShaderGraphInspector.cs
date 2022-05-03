@@ -39,6 +39,7 @@ namespace ShaderGraphImporter
         private int _BUILTIN_ZWrite;
         private int _BUILTIN_ZTest;
         private int _BUILTIN_CullMode;
+        private int _AlphaToMask;
 
         private static bool surfaceOptionsFoldout = true;
         private static bool surfaceInputsFoldout = true;
@@ -63,6 +64,8 @@ namespace ShaderGraphImporter
                 _BUILTIN_ZTest = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_ZTest", StringComparison.Ordinal));
                 _BUILTIN_CullMode = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_CullMode", StringComparison.Ordinal));
 
+                _AlphaToMask = Array.FindIndex(properties, x => x.name.Equals("_AlphaToMask", StringComparison.Ordinal));
+
                 _firstTime = false;
             }
 
@@ -85,6 +88,11 @@ namespace ShaderGraphImporter
                     materialEditor.ShaderProperty(properties[_BUILTIN_CullMode], new GUIContent("Cull"));
                     materialEditor.ShaderProperty(properties[_BUILTIN_AlphaClip], new GUIContent("Alpha Clipping"));
 
+                    if (properties[_BUILTIN_AlphaClip].floatValue == 1)
+                    {
+                        materialEditor.ShaderProperty(properties[_AlphaToMask], new GUIContent("Alpha To Coverage"));
+                    }
+
 
 
 
@@ -93,7 +101,7 @@ namespace ShaderGraphImporter
                         foreach (var o in materialEditor.targets)
                         {
                             var m = (Material)o;
-                            SetupMaterialRenderingMode(m, type, (BlendingMode)properties[_BUILTIN_Blend].floatValue, properties[_BUILTIN_AlphaClip].floatValue == 1);
+                            SetupMaterialRenderingMode(m, type, (BlendingMode)properties[_BUILTIN_Blend].floatValue, properties[_BUILTIN_AlphaClip].floatValue == 1, properties[_AlphaToMask].floatValue == 1);
                         }
                     }
 
@@ -139,7 +147,7 @@ namespace ShaderGraphImporter
             materialEditor.LightmapEmissionProperty();
         }
 
-        public static void SetupMaterialRenderingMode(Material material, SurfaceType surfaceType, BlendingMode blendingMode, bool alphaClipping)
+        public static void SetupMaterialRenderingMode(Material material, SurfaceType surfaceType, BlendingMode blendingMode, bool alphaClipping, bool alphaToCoverage)
         {
             switch (surfaceType)
             {
@@ -163,14 +171,24 @@ namespace ShaderGraphImporter
                 material.SetOverrideTag("RenderType", "TransparentCutout");
                 material.SetInt("_BUILTIN_ZWrite", 1);
                 material.renderQueue = (int)UnityEngine.Rendering.RenderQueue.AlphaTest;
-                material.SetInt("_AlphaToMask", 1);
+                material.SetInt("_AlphaToMask", 0);
                 material.EnableKeyword("_BUILTIN_AlphaClip");
-                material.EnableKeyword("_BUILTIN_ALPHATEST_ON");
+                //material.EnableKeyword("_BUILTIN_ALPHATEST_ON");
+
+                if (alphaToCoverage)
+                {
+                    material.SetInt("_AlphaToMask", 1);
+                    material.EnableKeyword("_ALPHA_TO_COVERAGE");
+                }
+                else
+                {
+                    material.DisableKeyword("_ALPHA_TO_COVERAGE");
+                }
             }
             else
             {
                 material.DisableKeyword("_BUILTIN_AlphaClip");
-                material.DisableKeyword("_BUILTIN_ALPHATEST_ON");
+                //material.DisableKeyword("_BUILTIN_ALPHATEST_ON");
             }
         }
 

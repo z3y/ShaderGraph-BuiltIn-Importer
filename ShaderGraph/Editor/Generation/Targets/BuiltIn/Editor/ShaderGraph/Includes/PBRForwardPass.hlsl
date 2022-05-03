@@ -210,7 +210,7 @@ half3 indirectSpecular = 0;
   c += LightingStandard (o, worldViewDir, gi);
   c.rgb += o.Emission + indirectSpecular;
   UNITY_APPLY_FOG(_unity_fogCoord, c); // apply fog
-  #ifndef _SURFACE_TYPE_TRANSPARENT
+  #if !defined(_ALPHA_TO_COVERAGE) && !defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT)
   UNITY_OPAQUE_ALPHA(c.a);
   #endif
   return c;

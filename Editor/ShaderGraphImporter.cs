@@ -143,7 +143,7 @@ namespace ShaderGraphImporter
                     input[index] += '\n' + "[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
                 }
 
-                else if (trimmed.Equals("Blend SrcAlpha One, One One\"", StringComparison.Ordinal))
+                else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
                     // forward add fix and additional options
                     input[index] = "Blend [_BUILTIN_SrcBlend] One";

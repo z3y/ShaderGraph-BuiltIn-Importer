@@ -2,6 +2,7 @@
 #define CUSTOMSHADING_CORE_INCLUDED
 
 #include "CommonFunctions.cginc"
+#include "NonImportantLights.cginc"
 
 half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
 {
@@ -64,11 +65,11 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
         directSpecular += lightData.Specular;
     #endif
 
-    #if defined(VERTEXLIGHT_ON) && !defined(VERTEXLIGHT_PS)
-//        lightData.FinalColor += i.vertexLight;
+    #if defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON) && !defined(VERTEXLIGHT_PS)
+        lightData.FinalColor += i.sh;
     #endif
 
-    #if defined(VERTEXLIGHT_PS) && defined(VERTEXLIGHT_ON)
+    #if defined(VERTEXLIGHT_PS) && defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON)
         NonImportantLightsPerPixel(lightData.FinalColor, directSpecular, i.worldPos, worldNormal, viewDir, NoV, f0, clampedRoughness);
     #endif
 
@@ -120,25 +121,25 @@ half3 indirectDiffuse = 0;
 
 
 
-    // #if defined(BAKEDSPECULAR) && defined(UNITY_PASS_FORWARDBASE) && !defined(BAKERYLM_ENABLED)
-    // {
-    //     float3 bakedDominantDirection = 1.0;
-    //     half3 bakedSpecularColor = 0.0;
+    #if defined(LIGHTMAPPED_SPECULAR) && defined(UNITY_PASS_FORWARDBASE) && !defined(BAKERY_SH)
+    {
+        float3 bakedDominantDirection = 1.0;
+        half3 bakedSpecularColor = 0.0;
 
-    //     #if defined(DIRLIGHTMAP_COMBINED) && defined(LIGHTMAP_ON)
-    //         bakedDominantDirection = (lightMapDirection.xyz) * 2.0 - 1.0;
-    //         bakedSpecularColor = indirectDiffuse;
-    //     #endif
+        #if defined(DIRLIGHTMAP_COMBINED) && defined(LIGHTMAP_ON)
+            bakedDominantDirection = (lightMapDirection.xyz) * 2.0 - 1.0;
+            bakedSpecularColor = indirectDiffuse;
+        #endif
 
-    //     #ifndef LIGHTMAP_ANY
-    //         bakedSpecularColor = half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-    //         bakedDominantDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz;
-    //     #endif
+        #ifndef LIGHTMAP_ON
+            bakedSpecularColor = half3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+            bakedDominantDirection = unity_SHAr.xyz + unity_SHAg.xyz + unity_SHAb.xyz;
+        #endif
 
-    //     bakedDominantDirection = normalize(bakedDominantDirection);
-    //     directSpecular += GetSpecularHighlights(worldNormal, bakedSpecularColor, bakedDominantDirection, f0, viewDir, clampedRoughness, NoV, DFGEnergyCompensation);
-    // }
-    // #endif
+        bakedDominantDirection = normalize(bakedDominantDirection);
+        directSpecular += GetSpecularHighlights(worldNormal, bakedSpecularColor, bakedDominantDirection, f0, viewDir, clampedRoughness, NoV, DFGEnergyCompensation);
+    }
+    #endif
 
 #ifdef UNITY_PASS_FORWARDBASE
     #if !defined(_GLOSSYREFLECTIONS_OFF)

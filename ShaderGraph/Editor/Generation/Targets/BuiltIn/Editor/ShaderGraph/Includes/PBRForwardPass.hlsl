@@ -32,20 +32,26 @@ v2f_surf PBRStandardVertex(appdata_full v)
     o.lmap.xy = v.texcoord1.xy * unity_LightmapST.xy + unity_LightmapST.zw;
     #endif
 
-    // SH/ambient and vertex lights
-    #ifndef LIGHTMAP_ON
-        #if UNITY_SHOULD_SAMPLE_SH && !UNITY_SAMPLE_FULL_SH_PER_PIXEL
-        o.sh = 0;
-        // Approximated illumination from non-important point lights
-        #ifdef VERTEXLIGHT_ON
-            o.sh += Shade4PointLights (
-            unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
-            unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
-            unity_4LightAtten0, worldPos, worldNormal);
-        #endif
-        o.sh = ShadeSHPerVertex (worldNormal, o.sh);
-        #endif
-    #endif // !LIGHTMAP_ON
+    // // SH/ambient and vertex lights
+    // #ifndef LIGHTMAP_ON
+    //     #if UNITY_SHOULD_SAMPLE_SH && !UNITY_SAMPLE_FULL_SH_PER_PIXEL
+    //     o.sh = 0;
+    //     // Approximated illumination from non-important point lights
+    //     #ifdef VERTEXLIGHT_ON
+    //         o.sh += Shade4PointLights (
+    //         unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+    //         unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+    //         unity_4LightAtten0, worldPos, worldNormal);
+    //     #endif
+    //     o.sh = ShadeSHPerVertex (worldNormal, o.sh);
+    //     #endif
+    // #endif // !LIGHTMAP_ON
+    #if defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON)
+        o.sh = Shade4PointLights (
+        unity_4LightPosX0, unity_4LightPosY0, unity_4LightPosZ0,
+        unity_LightColor[0].rgb, unity_LightColor[1].rgb, unity_LightColor[2].rgb, unity_LightColor[3].rgb,
+        unity_4LightAtten0, worldPos, worldNormal);
+    #endif
 
     UNITY_TRANSFER_LIGHTING(o,v.texcoord1.xy); // pass shadow and, possibly, light cookie coordinates to pixel shader
     #ifdef FOG_COMBINED_WITH_TSPACE

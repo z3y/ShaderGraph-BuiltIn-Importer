@@ -1,37 +1,14 @@
 #ifndef COMMON_FUNCTIONS_INCLUDED
 #define COMMON_FUNCTIONS_INCLUDED
 
-
 // Partially taken from Google Filament, Xiexe, Catlike Coding and Unity
 // https://google.github.io/filament/Filament.html
 // https://github.com/Xiexe/Unity-Lit-Shader-Templates
 // https://catlikecoding.com/
 
 #define GRAYSCALE float3(0.2125, 0.7154, 0.0721)
-#define TAU float(6.28318530718)
-#define glsl_mod(x,y) (((x)-(y)*floor((x)/(y))))
-
-#define FLT_EPSILON     1.192092896e-07 // Smallest positive number, such that 1.0 + FLT_EPSILON != 1.0
-#define FLT_MIN         1.175494351e-38 // Minimum representable positive floating-point number
-#define FLT_MAX         3.402823466e+38 // Maximum representable floating-point number
 
 #include "SurfaceData.cginc"
-
-struct appdata_all
-{
-    float4 vertex : POSITION;
-    float3 normal : NORMAL;
-    float4 uv0 : TEXCOORD0;
-    float4 uv1 : TEXCOORD1;
-    float4 uv2 : TEXCOORD2;
-    float4 uv3 : TEXCOORD3;
-    float4 tangent : TANGENT;
-    half4 color : COLOR;
-
-    uint vertexId : SV_VertexID;
-    UNITY_VERTEX_INPUT_INSTANCE_ID
-};
-
 SamplerState custom_bilinear_clamp_sampler;
 
 #include "EnvironmentBRDF.cginc"
@@ -102,18 +79,18 @@ float V_SmithGGXCorrelatedFast(half NoV, half NoL, half roughness) {
     return 0.5 / (GGXV + GGXL);
 }
 
-void FlipBTN(uint facing, inout float3 worldNormal, inout float3 bitangent, inout float3 tangent)
-{
-    #if !defined(LIGHTMAP_ON)
-        UNITY_FLATTEN
-        if (!facing)
-        {
-            worldNormal *= -1.0;
-            bitangent *= -1.0;
-            tangent *= -1.0;
-        }
-    #endif
-}
+// void FlipBTN(uint facing, inout float3 worldNormal, inout float3 bitangent, inout float3 tangent)
+// {
+//     #if !defined(LIGHTMAP_ON)
+//         UNITY_FLATTEN
+//         if (!facing)
+//         {
+//             worldNormal *= -1.0;
+//             bitangent *= -1.0;
+//             tangent *= -1.0;
+//         }
+//     #endif
+// }
 
 float V_SmithGGXCorrelated(half NoV, half NoL, half roughness)
 {

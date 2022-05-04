@@ -91,7 +91,12 @@ half4 PBRForwardAddFragment(SurfaceDescription surfaceDescription, InputData inp
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 
     SurfaceOutputStandard o = BuildStandardSurfaceOutput(surfaceDescription, inputData);
-    return PBRForwardAddFragment(vertexSurf, o);
+    //return PBRForwardAddFragment(vertexSurf, o);
+
+    SurfaceDataCustom surf;
+    InitializeDefaultSurfaceData(surf);
+    CopyStandardToCustomSurfaceData(surf, o);
+    return CustomLightingFrag(vertexSurf, surf, 0);
 }
 
 PackedVaryings vert(Attributes input)

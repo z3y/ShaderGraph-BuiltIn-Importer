@@ -78,20 +78,6 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
     SurfaceVertexToVaryings(o, varyings);
 }
 
-#if !defined(LIGHTMAP_ON) && defined(BAKERY_SH)
-#undef BAKERY_SH
-#endif
-
-#if defined(BAKERY_SH) || defined(BAKERY_PROBESHNONLINEAR)
-#include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Bakery.hlsl"
-#endif
-
-
-#ifdef SHADER_API_MOBILE
-  #undef PREDEFINED_DFGMULTISCATTER
-#endif
-
-#include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/AdditionalFunctions.hlsl"
 
 half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
 {
@@ -159,54 +145,10 @@ half4 PBRStandardFragment(v2f_surf vertexSurf, SurfaceOutputStandard o)
   #endif
   LightingStandard_GI(o, giInput, gi);
 
-  #ifdef PREDEFINED_DFGMULTISCATTER
-    gi.indirect.specular = 0;// using custom indirect specular
-  #endif
-
-
-  #if defined(BAKERY_PROBESHNONLINEAR) && !defined(LIGHTMAP_ON)
-  float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-        gi.indirect.diffuse.r = shEvaluateDiffuseL1Geomerics(L0.r, unity_SHAr.xyz, o.Normal);
-        gi.indirect.diffuse.g = shEvaluateDiffuseL1Geomerics(L0.g, unity_SHAg.xyz, o.Normal);
-        gi.indirect.diffuse.b = shEvaluateDiffuseL1Geomerics(L0.b, unity_SHAb.xyz, o.Normal);
-  #endif
-
-
-half3 indirectSpecular = 0;
-  half perceptualRoughness = 1.0f - o.Smoothness;
-  half roughness = perceptualRoughness*perceptualRoughness;
-
-  half3 lightmappedSpecular = 0;
-  #ifdef BAKERY_SH
-    #ifdef PREDEFINED_DFGMULTISCATTER
-      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, lightmappedSpecular, o.Normal, giInput.worldViewDir, roughness);
-    #else
-      BakerySHLightmapAndSpecular(gi.indirect.diffuse, giInput.lightmapUV, gi.indirect.specular, o.Normal, giInput.worldViewDir, roughness);
-    #endif
-  #endif
-
-
-  #ifdef PREDEFINED_DFGMULTISCATTER
-    half3 f0 = GetF0(o.Metallic, o.Albedo);
-    half NoV = saturate(dot(o.Normal, worldViewDir));
-    // half NoV = abs(dot(o.Normal, worldViewDir)) + 1e-5f;
-    #ifndef _GLOSSYREFLECTIONS_OFF
-      indirectSpecular = GetReflections(o.Normal, worldPos, worldViewDir, f0, roughness, NoV, gi.indirect.diffuse, o.Occlusion);
-    #endif
-  #endif
-
-  #ifdef PREDEFINED_DFGMULTISCATTER
-    indirectSpecular += lightmappedSpecular;
-    float2 DFGLut = SampleDFG(NoV, perceptualRoughness).rg;
-    half3 DFGEnergyCompensation = EnvBRDFEnergyCompensation(DFGLut, f0);
-    indirectSpecular *= DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
-#endif
-
-
 
   // realtime lighting: call lighting function
   c += LightingStandard (o, worldViewDir, gi);
-  c.rgb += o.Emission + indirectSpecular;
+  c.rgb += o.Emission;
   UNITY_APPLY_FOG(_unity_fogCoord, c); // apply fog
   #if !defined(PREDEFINED_A2C) && !defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) && !defined(_BUILTIN_AlphaClip)
   UNITY_OPAQUE_ALPHA(c.a);
@@ -224,7 +166,12 @@ half4 PBRStandardFragment(SurfaceDescription surfaceDescription, InputData input
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 
     SurfaceOutputStandard o = BuildStandardSurfaceOutput(surfaceDescription, inputData);
-    return PBRStandardFragment(vertexSurf, o);
+    //return PBRStandardFragment(vertexSurf, o);
+
+    SurfaceDataCustom surf;
+    InitializeDefaultSurfaceData(surf);
+    CopyStandardToCustomSurfaceData(surf, o);
+    return CustomLightingFrag(vertexSurf, surf, 0);
 }
 
 PackedVaryings vert(Attributes input)

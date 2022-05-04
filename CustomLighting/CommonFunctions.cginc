@@ -103,6 +103,19 @@ float V_SmithGGXCorrelatedFast(half NoV, half NoL, half roughness) {
     return 0.5 / (GGXV + GGXL);
 }
 
+void FlipBTN(uint facing, inout float3 worldNormal, inout float3 bitangent, inout float3 tangent)
+{
+    #if !defined(LIGHTMAP_ON)
+        UNITY_FLATTEN
+        if (!facing)
+        {
+            worldNormal *= -1.0;
+            bitangent *= -1.0;
+            tangent *= -1.0;
+        }
+    #endif
+}
+
 float V_SmithGGXCorrelated(half NoV, half NoL, half roughness)
 {
     #ifdef SHADER_API_MOBILE

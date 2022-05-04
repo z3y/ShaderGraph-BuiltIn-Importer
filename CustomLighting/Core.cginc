@@ -1,7 +1,7 @@
 
 #include "CommonFunctions.cginc"
 
-half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf ,uint facing)
+half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
 {
     #if defined(LOD_FADE_CROSSFADE)
 		UnityApplyDitherCrossFade(i.pos);
@@ -33,7 +33,7 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf ,uint facing)
     float3 bitangent = float3(i.tSpace0.y,i.tSpace1.y,i.tSpace2.y);
     float3 tangent = float3(i.tSpace0.x,i.tSpace1.x,i.tSpace2.x);;
 
-    //FlipBTN(facing, worldNormal, bitangent, tangent);
+    FlipBTN(facing, worldNormal, bitangent, tangent);
 
     half3 indirectSpecular = 0.0;
     half3 directSpecular = 0.0;

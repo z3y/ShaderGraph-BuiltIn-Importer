@@ -22,7 +22,6 @@ void InitializeDefaultSurfaceData(inout SurfaceDataCustom surf)
     surf.alpha = 1.0;
 }
 
-
 void CopyStandardToCustomSurfaceData(inout SurfaceDataCustom surf, SurfaceOutputStandard standardSurf)
 {
     surf.albedo = standardSurf.Albedo;
@@ -34,15 +33,3 @@ void CopyStandardToCustomSurfaceData(inout SurfaceDataCustom surf, SurfaceOutput
     surf.reflectance = 0.5;
     surf.alpha = standardSurf.Alpha;
 }
-// struct SurfaceOutputStandard
-// {
-//     fixed3 Albedo;      // base (diffuse or specular) color
-//     float3 Normal;      // tangent space normal, if written
-//     half3 Emission;
-//     half Metallic;      // 0=non-metal, 1=metal
-//     // Smoothness is the user facing name, it should be perceptual smoothness but user should not have to deal with it.
-//     // Everywhere in the code you meet smoothness it is perceptual smoothness
-//     half Smoothness;    // 0=rough, 1=smooth
-//     half Occlusion;     // occlusion (default 1)
-//     fixed Alpha;        // alpha for transparencies
-// };

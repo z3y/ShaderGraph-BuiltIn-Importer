@@ -171,7 +171,12 @@ half4 PBRStandardFragment(SurfaceDescription surfaceDescription, InputData input
     SurfaceDataCustom surf;
     InitializeDefaultSurfaceData(surf);
     CopyStandardToCustomSurfaceData(surf, o);
-    return CustomLightingFrag(vertexSurf, surf, 0);
+
+    uint cull = 1;
+    #if defined(SHADER_STAGE_FRAGMENT) && defined(VARYINGS_NEED_CULLFACE)
+      cull = varyings.cullFace;
+    #endif
+    return CustomLightingFrag(vertexSurf, surf, cull);
 }
 
 PackedVaryings vert(Attributes input)

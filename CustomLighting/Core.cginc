@@ -28,7 +28,11 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
 #else
 
     #if defined(_BUILTIN_AlphaClip)
-        AACutout(surf.alpha, surf.alphaClipThreshold);
+        #if defined(PREDEFINED_A2C) && !defined(UNITY_PASS_META)
+            AACutout(surf.alpha, surf.alphaClipThreshold);
+        #else
+            if (surf.alpha < surf.alphaClipThreshold) discard;
+        #endif
     #endif
 
     float3 worldNormal = surf.tangentNormal;

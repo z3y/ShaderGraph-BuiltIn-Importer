@@ -13,9 +13,9 @@ void BakerySHLightmapAndSpecular(inout half3 lightMap, float2 lightmapUV, inout 
     #ifdef BAKERY_SH
 
         half3 L0 = lightMap;
-        float3 nL1x = _RNM0.Sample(custom_bilinear_clamp_sampler, lightmapUV) * 2.0 - 1.0;
-        float3 nL1y = _RNM1.Sample(custom_bilinear_clamp_sampler, lightmapUV) * 2.0 - 1.0;
-        float3 nL1z = _RNM2.Sample(custom_bilinear_clamp_sampler, lightmapUV) * 2.0 - 1.0;
+        float3 nL1x = _RNM0.Sample(custom_bilinear_clamp_sampler, lightmapUV).rgb * 2.0 - 1.0;
+        float3 nL1y = _RNM1.Sample(custom_bilinear_clamp_sampler, lightmapUV).rgb * 2.0 - 1.0;
+        float3 nL1z = _RNM2.Sample(custom_bilinear_clamp_sampler, lightmapUV).rgb * 2.0 - 1.0;
         float3 L1x = nL1x * L0 * 2.0;
         float3 L1y = nL1y * L0 * 2.0;
         float3 L1z = nL1z * L0 * 2.0;

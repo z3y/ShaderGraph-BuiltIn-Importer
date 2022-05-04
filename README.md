@@ -1,6 +1,6 @@
 Import Unity Shader Graphs made with built-in target to older unity versions. Tested with 2021.3 -> 2019.4
 
-Also includes shader graph bug fixes for GPU Instancing, Single Pass and Single Pass Instanced rendering, SPI shadow attenuation and more that Unity didnt yet fix, some additional Bakery features and more planned features.
+Also includes shader graph bug fixes for GPU Instancing, Single Pass and Single Pass Instanced rendering, SPI shadow attenuation and more, some additional Bakery features and more planned features. Experimental, theres probably bugs
 
 Select a Shader Graph shader, Copy Shader -> `Window > ShaderGraphImporter` Paste and Import
 

@@ -1,3 +1,5 @@
+#ifndef CUSTOMSHADING_CORE_INCLUDED
+#define CUSTOMSHADING_CORE_INCLUDED
 
 #include "CommonFunctions.cginc"
 
@@ -9,15 +11,15 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
 
 #if defined(UNITY_PASS_SHADOWCASTER)
 
-    #if defined(_MODE_CUTOUT)
+    #if defined(_BUILTIN_AlphaClip)
         if (surf.alpha < _Cutoff) discard;
     #endif
 
-    #ifdef _ALPHAPREMULTIPLY_ON
+    #ifdef _BUILTIN_ALPHAPREMULTIPLY_ON
         surf.alpha = lerp(surf.alpha, 1.0, surf.metallic);
     #endif
 
-    #if defined(_ALPHAPREMULTIPLY_ON) || defined(_MODE_FADE)
+    #if defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT)
         half dither = Unity_Dither(surf.alpha, i.pos.xy);
         if (dither < 0.0) discard;
     #endif
@@ -25,8 +27,8 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf, uint facing)
     SHADOW_CASTER_FRAGMENT(i);
 #else
 
-    #if defined(_MODE_CUTOUT)
-        AACutout(surf.alpha, _Cutoff);
+    #if defined(_BUILTIN_AlphaClip)
+        AACutout(surf.alpha, surf.alphaClipThreshold);
     #endif
 
     float3 worldNormal = surf.tangentNormal;
@@ -138,7 +140,7 @@ half3 indirectDiffuse = 0;
     #endif
 #endif
 
-    #if defined(_ALPHAPREMULTIPLY_ON)
+    #if defined(_BUILTIN_ALPHAPREMULTIPLY_ON)
         surf.albedo.rgb *= surf.alpha;
         surf.alpha = lerp(surf.alpha, 1.0, surf.metallic);
     #endif
@@ -165,3 +167,4 @@ half3 indirectDiffuse = 0;
     return finalColor;
 #endif
 }
+#endif

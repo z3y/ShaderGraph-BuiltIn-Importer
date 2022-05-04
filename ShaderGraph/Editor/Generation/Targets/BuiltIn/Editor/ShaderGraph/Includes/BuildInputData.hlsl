@@ -42,7 +42,6 @@ void BuildInputData(Varyings input, SurfaceDescription surfaceDescription, out I
     inputData.normalizedScreenSpaceUV = GetNormalizedScreenSpaceUV(input.positionCS);
 }
 
-#include "Packages/com.z3y.shadergraph-builtin/CustomLighting/Core.cginc"
 
 
 #endif // UNITY_BUILD_INTPUT_DATA_INCLUDED

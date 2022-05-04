@@ -96,7 +96,18 @@ half4 PBRForwardAddFragment(SurfaceDescription surfaceDescription, InputData inp
     SurfaceDataCustom surf;
     InitializeDefaultSurfaceData(surf);
     CopyStandardToCustomSurfaceData(surf, o);
-    return CustomLightingFrag(vertexSurf, surf, 0);
+    #ifdef _BUILTIN_AlphaClip
+    surf.alphaClipThreshold = surfaceDescription.AlphaClipThreshold;
+    #endif
+    #if defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) || defined(_BUILTIN_AlphaClip)
+      surf.alpha = surfaceDescription.Alpha;
+    #endif
+
+    uint cull = 1;
+    #if defined(SHADER_STAGE_FRAGMENT) && defined(VARYINGS_NEED_CULLFACE)
+      cull = varyings.cullFace;
+    #endif
+    return CustomLightingFrag(vertexSurf, surf, cull);
 }
 
 PackedVaryings vert(Attributes input)

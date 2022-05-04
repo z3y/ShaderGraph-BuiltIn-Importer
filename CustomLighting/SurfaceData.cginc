@@ -8,6 +8,7 @@ struct SurfaceDataCustom
     half occlusion;
     half reflectance;
     half alpha;
+    half alphaClipThreshold;
 };
 
 void InitializeDefaultSurfaceData(inout SurfaceDataCustom surf)
@@ -20,6 +21,7 @@ void InitializeDefaultSurfaceData(inout SurfaceDataCustom surf)
     surf.occlusion = 1.0;
     surf.reflectance = 0.5;
     surf.alpha = 1.0;
+    surf.alphaClipThreshold = 0.5;
 }
 
 void CopyStandardToCustomSurfaceData(inout SurfaceDataCustom surf, SurfaceOutputStandard standardSurf)

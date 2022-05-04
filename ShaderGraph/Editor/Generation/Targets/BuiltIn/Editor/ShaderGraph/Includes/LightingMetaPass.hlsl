@@ -3,6 +3,7 @@
 
 #include "UnityMetaPass.cginc"
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/SurfaceData.hlsl"
+#include "Packages/com.z3y.shadergraph-builtin/CustomLighting/Core.cginc"
 
 SurfaceData SurfaceDescriptionToSurfaceData(SurfaceDescription surfaceDescription)
 {
@@ -129,7 +130,22 @@ half4 MetaFragment(SurfaceDescription surfaceDescription, Varyings varyings)
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 
     SurfaceOutputStandard o = BuildStandardSurfaceOutput(surfaceDescription);
-    return MetaFragment(vertexSurf, o);
+    //return MetaFragment(vertexSurf, o);
+    SurfaceDataCustom surf;
+    InitializeDefaultSurfaceData(surf);
+    CopyStandardToCustomSurfaceData(surf, o);
+    #ifdef _BUILTIN_AlphaClip
+    surf.alphaClipThreshold = surfaceDescription.AlphaClipThreshold;
+    #endif
+    #if defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) || defined(_BUILTIN_AlphaClip)
+      surf.alpha = surfaceDescription.Alpha;
+    #endif
+
+    uint cull = 1;
+    #if defined(SHADER_STAGE_FRAGMENT) && defined(VARYINGS_NEED_CULLFACE)
+      cull = varyings.cullFace;
+    #endif
+    return CustomLightingFrag(vertexSurf, surf, cull);
 }
 
 PackedVaryings vert(Attributes input)

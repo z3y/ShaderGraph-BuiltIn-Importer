@@ -1,16 +1,18 @@
 #ifndef UNITY_LEGACY_BUILDING_INCLUDED
 #define UNITY_LEGACY_BUILDING_INCLUDED
 
+#include "Packages/com.z3y.shadergraph-builtin/CustomLighting/Core.cginc"
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/SurfaceData.hlsl"
+
 
 SurfaceData SurfaceDescriptionToSurfaceData(SurfaceDescription surfaceDescription)
 {
     #if _AlphaClip
        half alpha = surfaceDescription.Alpha;
        #if defined(UNITY_PASS_SHADOWCASTER) || !defined(PREDEFINED_A2C)
-            clip(alpha - surfaceDescription.AlphaClipThreshold);
+        //    clip(alpha - surfaceDescription.AlphaClipThreshold);
         #else
-           alpha = (alpha - surfaceDescription.AlphaClipThreshold) / max(fwidth(alpha), 0.0001) + 0.5;
+        //   alpha = (alpha - surfaceDescription.AlphaClipThreshold) / max(fwidth(alpha), 0.0001) + 0.5;
         #endif
     #elif _SURFACE_TYPE_TRANSPARENT
        half alpha = surfaceDescription.Alpha;

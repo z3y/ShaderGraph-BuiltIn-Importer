@@ -1,6 +1,8 @@
 #ifndef SG_SHADOW_PASS_INCLUDED
 #define SG_SHADOW_PASS_INCLUDED
 
+#include "Packages/com.z3y.shadergraph-builtin/CustomLighting/Core.cginc"
+
 v2f_surf ShadowCasterVertex(appdata_full v)
 {
     UNITY_SETUP_INSTANCE_ID(v);
@@ -55,7 +57,7 @@ half4 ShadowCasterFragment(v2f_surf IN)
     SHADOW_CASTER_FRAGMENT(IN)
 }
 
-half4 ShadowCasterFragment(Varyings varyings)
+half4 ShadowCasterFragment(SurfaceDescription surfaceDescription, Varyings varyings)
 {
     v2f_surf vertexSurf;
     ZERO_INITIALIZE(v2f_surf, vertexSurf);
@@ -64,7 +66,22 @@ half4 ShadowCasterFragment(Varyings varyings)
     #endif
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 
-    return ShadowCasterFragment(vertexSurf);
+    //return ShadowCasterFragment(vertexSurf);
+    SurfaceDataCustom surf;
+    InitializeDefaultSurfaceData(surf);
+//    CopyStandardToCustomSurfaceData(surf, o);
+    #ifdef _BUILTIN_AlphaClip
+    surf.alphaClipThreshold = surfaceDescription.AlphaClipThreshold;
+    #endif
+    #if defined(_BUILTIN_SURFACE_TYPE_TRANSPARENT) || defined(_BUILTIN_AlphaClip)
+      surf.alpha = surfaceDescription.Alpha;
+    #endif
+
+    uint cull = 1;
+    #if defined(SHADER_STAGE_FRAGMENT) && defined(VARYINGS_NEED_CULLFACE)
+      cull = varyings.cullFace;
+    #endif
+    return CustomLightingFrag(vertexSurf, surf, cull);
 }
 
 PackedVaryings vert(Attributes input)
@@ -91,12 +108,12 @@ half4 frag(PackedVaryings packedInput) : SV_TARGET
     SurfaceDescriptionInputs surfaceDescriptionInputs = BuildSurfaceDescriptionInputs(unpacked);
     SurfaceDescription surfaceDescription = SurfaceDescriptionFunction(surfaceDescriptionInputs);
 
-    #if _AlphaClip
-       half alpha = surfaceDescription.Alpha;
-       clip(alpha - surfaceDescription.AlphaClipThreshold);
-    #endif
+    // #if _AlphaClip
+    //    half alpha = surfaceDescription.Alpha;
+    //    clip(alpha - surfaceDescription.AlphaClipThreshold);
+    // #endif
 
-    half4 color = ShadowCasterFragment(unpacked);
+    half4 color = ShadowCasterFragment(surfaceDescription, unpacked);
     return color;
 }
 

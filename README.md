@@ -3,5 +3,5 @@ ShaderGraph built-in with custom shading and some bug fixes, also allows importi
 Select a Shader Graph shader, Copy Shader -> `Window > ShaderGraphImporter` Paste and Import
 
 
-Licensed under Unity Companion License:
+Shader Graph and Built-In includes Licensed under Unity Companion License:
 https://unity3d.com/legal/licenses/Unity_Companion_License

@@ -125,10 +125,10 @@ namespace ShaderGraphImporter
 
                     if (property.type == MaterialProperty.PropType.Texture)
                     {
-                        materialEditor.TexturePropertySingleLine(new GUIContent(property.displayName), property);
+                        materialEditor.TextureProperty(property, property.displayName);
                         if ((property.flags & MaterialProperty.PropFlags.NoScaleOffset) == 0)
                         {
-                            materialEditor.TextureScaleOffsetProperty(property);
+                        //    materialEditor.TextureScaleOffsetProperty(property);
                         }
                     }
                     else

@@ -18,11 +18,11 @@ v2f_surf PBRStandardVertex(appdata_full v)
     fixed tangentSign = v.tangent.w * unity_WorldTransformParams.w;
     fixed3 worldBinormal = cross(worldNormal, worldTangent) * tangentSign;
     #endif
-    #if defined(LIGHTMAP_ON) && defined(DIRLIGHTMAP_COMBINED) && !defined(UNITY_HALF_PRECISION_FRAGMENT_SHADER_REGISTERS)
-    o.tSpace0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);
-    o.tSpace1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);
-    o.tSpace2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
-    #endif
+    // #if defined(LIGHTMAP_ON) && defined(DIRLIGHTMAP_COMBINED) && !defined(UNITY_HALF_PRECISION_FRAGMENT_SHADER_REGISTERS)
+    // o.tSpace0 = float4(worldTangent.x, worldBinormal.x, worldNormal.x, worldPos.x);
+    // o.tSpace1 = float4(worldTangent.y, worldBinormal.y, worldNormal.y, worldPos.y);
+    // o.tSpace2 = float4(worldTangent.z, worldBinormal.z, worldNormal.z, worldPos.z);
+    // #endif
     o.worldPos.xyz = worldPos;
     o.worldNormal = worldNormal;
     #ifdef DYNAMICLIGHTMAP_ON

@@ -7,8 +7,8 @@ struct v2f_surf {
   float3 worldPos;// : TEXCOORD2;
   float3 viewDir;
   float4 lmap;// : TEXCOORD3;
-  #if UNITY_SHOULD_SAMPLE_SH
-  half3 sh;// : TEXCOORD3; // SH
+  #if defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON) && !defined(VERTEXLIGHT_PS)
+  half3 sh;// vertex light
   #endif
   float1 fogCoord; //UNITY_FOG_COORDS(4)
   DECLARE_LIGHT_COORDS(4)//unityShadowCoord4 _LightCoord;

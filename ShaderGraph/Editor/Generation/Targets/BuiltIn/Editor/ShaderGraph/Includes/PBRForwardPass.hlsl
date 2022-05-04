@@ -81,6 +81,10 @@ void PBRStandardVertex(Attributes input, VertexDescription vertexDescription, in
     varyings.instanceID = o.instanceID;
     #endif
 
+    #if defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON)
+    varyings.sh = o.sh;
+    #endif
+
     SurfaceVertexToVaryings(o, varyings);
 }
 
@@ -168,6 +172,9 @@ half4 PBRStandardFragment(SurfaceDescription surfaceDescription, InputData input
     ZERO_INITIALIZE(v2f_surf, vertexSurf);
     #if UNITY_ANY_INSTANCING_ENABLED
     vertexSurf.instanceID = varyings.instanceID;
+    #endif
+    #if defined(VERTEXLIGHT_ON) && !defined(LIGHTMAP_ON)
+    vertexSurf.sh = varyings.sh;
     #endif
     VaryingsToSurfaceVertex(varyings, vertexSurf);
 

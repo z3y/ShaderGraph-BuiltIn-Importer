@@ -155,6 +155,10 @@ namespace ShaderGraphImporter
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
 
+                    sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
+                    sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                    sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
+
                     
                     for (int j = 0; j < predefined.Count; j++)
                     {

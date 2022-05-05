@@ -141,11 +141,7 @@ half4 MetaFragment(SurfaceDescription surfaceDescription, Varyings varyings)
       surf.alpha = surfaceDescription.Alpha;
     #endif
 
-    uint cull = 1;
-    #if defined(SHADER_STAGE_FRAGMENT) && defined(VARYINGS_NEED_CULLFACE)
-      cull = varyings.cullFace;
-    #endif
-    return CustomLightingFrag(vertexSurf, surf, cull);
+    return CustomLightingFrag(vertexSurf, surf);
 }
 
 PackedVaryings vert(Attributes input)

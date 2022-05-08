@@ -150,6 +150,24 @@ half3 indirectDiffuse = 0;
     #endif
 #endif
 
+#ifdef LTCGI
+    float2 ltcgi_lmuv;
+    #if defined(LIGHTMAP_ON)
+        ltcgi_lmuv = i.lmap.xy;
+    #else
+        ltcgi_lmuv = float2(0, 0);
+    #endif
+
+    float3 ltcgiSpecular = 0;
+    LTCGI_Contribution(i.worldPos, worldNormal, viewDir, surf.perceptualRoughness, ltcgi_lmuv, indirectDiffuse
+        #ifndef SPECULAR_HIGHLIGHTS_OFF
+                , ltcgiSpecular
+        #endif
+    );
+    indirectSpecular += ltcgiSpecular;
+#endif
+
+
     #if defined(_BUILTIN_ALPHAPREMULTIPLY_ON)
         surf.albedo.rgb *= surf.alpha;
         surf.alpha = lerp(surf.alpha, 1.0, surf.metallic);
@@ -158,6 +176,7 @@ half3 indirectDiffuse = 0;
     #if defined(_ALPHAMODULATE_ON)
         surf.albedo.rgb = lerp(1.0, surf.albedo.rgb, surf.alpha);
     #endif
+    
 
     #ifdef SHADER_API_MOBILE
         indirectSpecular *= EnvBRDFApprox(surf.perceptualRoughness, NoV, f0);

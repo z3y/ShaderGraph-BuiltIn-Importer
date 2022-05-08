@@ -47,9 +47,9 @@ namespace ShaderGraphImporter
 
 
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
-            //_settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
-            //_settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
 
 
             EditorGUILayout.Space();
@@ -103,6 +103,8 @@ namespace ShaderGraphImporter
     {
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
         private const string DefaultImportPath = "Assets/ShaderGraph/";
+
+        private const string ltcgiInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
 
         private static readonly string[] ReplaceLines =
         {
@@ -195,8 +197,20 @@ namespace ShaderGraphImporter
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                     {
-                        input[index] = input[index] + '\n' + "[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
-                        input[index] += '\n' + "[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                        input[index] = input[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
+                        input[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+
+                        if (importerSettings.bakeryFeatures)
+                        {
+                            input[index] += "\n[Toggle(BAKERY_SH)] _BakerySH (\"Bakery SH\", Int) = 0";
+                            input[index] += "\n[Toggle(LIGHTMAPPED_SPECULAR)] _LightmappedSpecular (\"Lightmapped Specular\", Int) = 0";
+                            input[index] += "\n[Toggle(BAKERY_PROBESHNONLINEAR)] _NonLinearLightProbeSH (\"Non-Linear LightProbe SH\", Int) = 0";
+                        }
+                        if (importerSettings.ltcgi)
+                        {
+                            input[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
+                            input[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
+                        }
                     }
                 }
 
@@ -217,7 +231,7 @@ namespace ShaderGraphImporter
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
 
-                    
+
                     for (int j = 0; j < predefined.Count; j++)
                     {
                         sb.AppendLine(predefined[j]);
@@ -233,6 +247,8 @@ namespace ShaderGraphImporter
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
                     if (importerSettings.alphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+
+                    
                 }
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
@@ -248,6 +264,57 @@ namespace ShaderGraphImporter
                     // multicompile missing
                     input[index] = input[index] + '\n' + "#pragma multi_compile_instancing";
                 }
+                else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
+                {
+                    if (importerSettings.bakeryFeatures)
+                    {
+                        input[index] += "\n#pragma shader_feature_local_fragment BAKERY_SH";
+                        input[index] += "\n#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR";
+                        input[index] += "\n#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR";
+                    }
+                    if (importerSettings.ltcgi)
+                    {
+                        input[index] += "\n#pragma shader_feature_local_fragment LTCGI";
+                        input[index] += "\n#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF";
+                    }
+                }
+
+                if (importerSettings.ltcgi && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))
+                {
+                    input[index] =  ltcgiInclude + '\n' + input[index];
+                }
+
+
+                //remove unneeded passes
+                else if (trimmed.Equals("Name \"BuiltIn Deferred\"", StringComparison.Ordinal))
+                {
+                    index = RemovePass(input, index);
+                }
+                else if (trimmed.Equals("Name \"DepthOnly\"", StringComparison.Ordinal))
+                {
+                    index = RemovePass(input, index);
+                }
+                else if (trimmed.Equals("Name \"SceneSelectionPass\"", StringComparison.Ordinal))
+                {
+                    index = RemovePass(input, index);
+                }
+                else if (trimmed.Equals("Name \"ScenePickingPass\"", StringComparison.Ordinal))
+                {
+                    index = RemovePass(input, index);
+                }
+
+                
+
+                //tags
+                else if (trimmed.Equals("\"ShaderGraphShader\"=\"true\"", StringComparison.Ordinal))
+                {
+                    if (importerSettings.ltcgi)
+                    {
+                        input[index] += "\n \"LTCGI\" = \"_LTCGI\"";
+                    }
+                }
+
+
                 // remove unneeded multicompiles
                 foreach (var replaceLine in ReplaceLines)
                 {
@@ -256,6 +323,8 @@ namespace ShaderGraphImporter
                         input[index] = string.Empty;
                     }
                 }
+
+                
 
                 if (trimmed.StartsWith("CustomEditor \"UnityEditor.ShaderGraph.", StringComparison.Ordinal))
                 {
@@ -274,6 +343,23 @@ namespace ShaderGraphImporter
 
 
             }
+        }
+
+        private static int RemovePass(string[] input, int index)
+        {
+            for (int i = index - 2; i < input.Length; i++)
+            {
+                if (input[i].TrimStart().Equals("ENDHLSL"))
+                {
+                    input[i] = string.Empty;
+                    input[i + 1] = string.Empty;
+                    break;
+                }
+                input[i] = string.Empty;
+                index = i;
+            }
+
+            return index;
         }
 
         internal static void ImportShader(ref ImporterSettings importerSettings)

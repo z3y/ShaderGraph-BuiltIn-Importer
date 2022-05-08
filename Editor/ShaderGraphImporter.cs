@@ -17,6 +17,7 @@ namespace ShaderGraphImporter
         private ImporterSettings _settings;
         public override void OnInspectorGUI()
         {
+            EditorGUI.BeginChangeCheck();
             _settings = (ImporterSettings)target;
             if (GUILayout.Button("Paste & Import"))
             {
@@ -62,7 +63,10 @@ namespace ShaderGraphImporter
             EditorGUILayout.EndHorizontal();
 
             _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
-            //base.OnInspectorGUI();
+            if (EditorGUI.EndChangeCheck())
+            {
+                EditorUtility.SetDirty(_settings);
+            }
         }
     }
 

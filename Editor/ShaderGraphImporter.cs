@@ -48,6 +48,7 @@ namespace ShaderGraphImporter
 
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
             _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
 
@@ -200,6 +201,11 @@ namespace ShaderGraphImporter
                         input[index] = input[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
                         input[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
 
+                        if (importerSettings.specularOcclusion)
+                        {
+                            input[index] += "\n _SpecularOcclusion(\"Specular Occlusion\", Range(0,1)) = 0";
+                        }
+
                         if (importerSettings.bakeryFeatures)
                         {
                             input[index] += "\n[Toggle(BAKERY_SH)] _BakerySH (\"Bakery SH\", Int) = 0";
@@ -211,6 +217,7 @@ namespace ShaderGraphImporter
                             input[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
                             input[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
                         }
+                        
                     }
                 }
 
@@ -221,6 +228,7 @@ namespace ShaderGraphImporter
                     var predefined = new List<string>();
 
                     if (importerSettings.alphaToCoverage && materialOverrideOn) predefined.Add("#define PREDEFINED_A2C");
+                    if (importerSettings.specularOcclusion) predefined.Add("#define _SPECULAR_OCCLUSION");
 
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
@@ -232,7 +240,7 @@ namespace ShaderGraphImporter
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
 
 
-                    for (int j = 0; j < predefined.Count; j++)
+                        for (int j = 0; j < predefined.Count; j++)
                     {
                         sb.AppendLine(predefined[j]);
                     }
@@ -311,6 +319,16 @@ namespace ShaderGraphImporter
                     if (importerSettings.ltcgi)
                     {
                         input[index] += "\n \"LTCGI\" = \"_LTCGI\"";
+                    }
+                }
+
+
+                // additional properties
+                else if (trimmed.Equals("CBUFFER_START(UnityPerMaterial)", StringComparison.Ordinal))
+                {
+                    if (importerSettings.specularOcclusion)
+                    {
+                        input[index] += "\nhalf _SpecularOcclusion;";
                     }
                 }
 

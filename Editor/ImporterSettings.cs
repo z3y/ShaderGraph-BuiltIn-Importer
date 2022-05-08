@@ -13,7 +13,8 @@ namespace ShaderGraphImporter
         public string importPath;
         public string CustomEditor;
         public bool showCode = false; // prevent inspector lag
-        public bool bakeryFeatures = true;
+        public bool bakeryFeatures = false;
+        public bool specularOcclusion = false;
         public bool ltcgi = false;
         public bool stencil = false;
         public string fileName;

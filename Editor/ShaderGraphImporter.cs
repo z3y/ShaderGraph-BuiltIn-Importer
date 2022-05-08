@@ -15,10 +15,15 @@ namespace ShaderGraphImporter
     public class SettingsEditor : Editor
     {
         private ImporterSettings _settings;
+
+        private Vector2 _scrollPosition;
         public override void OnInspectorGUI()
         {
-            EditorGUI.BeginChangeCheck();
             _settings = (ImporterSettings)target;
+
+            EditorGUI.BeginChangeCheck();
+            Undo.RecordObject(_settings, "Shader Graph Importer Settings");
+
             if (GUILayout.Button("Paste & Import"))
             {
                 _settings.shaderCode = GUIUtility.systemCopyBuffer;
@@ -28,11 +33,19 @@ namespace ShaderGraphImporter
             {
                 Importer.ImportShader(ref _settings);
             }
+            if (GUILayout.Button("Ping"))
+            {
+                var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
+                if (shaderObject is null) return;
+                EditorGUIUtility.PingObject(shaderObject);
+            }
 
             _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
             if (_settings.showCode)
             {
-                EditorGUILayout.TextArea(_settings.shaderCode, GUILayout.Height(500));
+                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(500));
+                EditorGUILayout.TextArea(_settings.shaderCode, GUILayout.ExpandHeight(true));
+                EditorGUILayout.EndScrollView();
             }
 
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
@@ -181,6 +194,8 @@ namespace ShaderGraphImporter
 
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
+
+                    sb.AppendLine("#define IMPORTER_VERSION 1");
 
                     sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");

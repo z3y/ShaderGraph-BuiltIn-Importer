@@ -11,41 +11,83 @@ using Directory = UnityEngine.Windows.Directory;
 
 namespace ShaderGraphImporter
 {
-    public class Importer : EditorWindow
+    [CreateAssetMenu(fileName = "Imported Shader", menuName = "Shader/ShaderGraphImporter")]
+    public class ImporterSettings : ScriptableObject
     {
-        [MenuItem("Window/ShaderGraphImporter")]
-        static void Init()
+        public string shaderName;
+        public string shaderCode;
+        public bool alphaToCoverage = true;
+        public bool grabPass = false;
+        public string shaderGraphProjectPath; // for handling custom .hlsl includes
+        public string importPath;
+        public string CustomEditor;
+        public bool showCode = false; // prevent inspector lag
+        public bool bakeryFeatures = true;
+        public bool ltcgi = false;
+        public bool stencil = false;
+        public string fileName;
+        //public string[] predefinedKeywords;
+    }
+
+    [CustomEditor(typeof(ImporterSettings))]
+    public class SettingsEditor : Editor
+    {
+        private ImporterSettings _settings;
+        public override void OnInspectorGUI()
         {
-            // Get existing open window or if none, make a new one:
-            Importer window = (Importer)EditorWindow.GetWindow(typeof(Importer));
-            window.Show();
-        }
-
-        //private static string _shaderCodeEditor = "";
-        //private static string _customEditor = "";
-
-        private const string DefaultEditor = "\"ShaderGraphImporter.DefaultInspector\"";
-
-        private static bool useAlphaToCoverage = true;
-        private static bool useDFGMultiscatter = true;
-
-
-        void OnGUI()
-        {
+            _settings = (ImporterSettings)target;
             if (GUILayout.Button("Paste & Import"))
             {
-                string code = GUIUtility.systemCopyBuffer;
-                ImportShader(ref code);
+                _settings.shaderCode = GUIUtility.systemCopyBuffer;
+                Importer.ImportShader(ref _settings);
+            }
+            if (GUILayout.Button("Re-Import"))
+            {
+                Importer.ImportShader(ref _settings);
             }
 
-            useAlphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", useAlphaToCoverage);
-            //useDFGMultiscatter = EditorGUILayout.ToggleLeft("DFG Multiscatter", useDFGMultiscatter);
+            _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
+            if (_settings.showCode)
+            {
+                EditorGUILayout.TextArea(_settings.shaderCode, GUILayout.Height(500));
+            }
 
+            _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
+            _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            _settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
+            _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
+            _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 
+            EditorGUILayout.BeginHorizontal();
+            _settings.importPath = EditorGUILayout.TextField("Import Path", _settings.importPath);
+            if (GUILayout.Button("Select"))
+            {
+                _settings.importPath = EditorUtility.OpenFolderPanel("Shader Path", "", "");
+                if (_settings.importPath.StartsWith(Application.dataPath))
+                {
+                    _settings.importPath = "Assets" + _settings.importPath.Substring(Application.dataPath.Length);
+                }
+            }
+            EditorGUILayout.EndHorizontal();
 
+            EditorGUILayout.BeginHorizontal();
+            _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
+            if (GUILayout.Button("Select"))
+            {
+                _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
+            }
+            EditorGUILayout.EndHorizontal();
+
+            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
+            //base.OnInspectorGUI();
         }
+    }
 
-        private const string ImportPath = "Assets/ShaderGraph/";
+    internal static class Importer
+    {
+        private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
+        private const string DefaultImportPath = "Assets/ShaderGraph/";
 
         private static readonly string[] ReplaceLines =
         {
@@ -75,7 +117,7 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
 
-        private static void EditShaderFile(ref string[] input)
+        private static void EditShaderFile(ref string[] input, ImporterSettings importerSettings)
         {
             
 
@@ -149,8 +191,7 @@ namespace ShaderGraphImporter
                     parsingProperties = false;
                     var predefined = new List<string>();
 
-                    if (useAlphaToCoverage && materialOverrideOn) predefined.Add("#define PREDEFINED_A2C");
-                    if (useDFGMultiscatter) predefined.Add("#define PREDEFINED_DFGMULTISCATTER");
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) predefined.Add("#define PREDEFINED_A2C");
 
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
@@ -174,7 +215,7 @@ namespace ShaderGraphImporter
                 // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
-                    if (useAlphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
@@ -183,7 +224,7 @@ namespace ShaderGraphImporter
                     if (materialOverrideOn) input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
                     if (materialOverrideOn) input[index] += '\n' + "ZTest LEqual";
                     input[index] += '\n' + "Fog { Color (0,0,0,0) }";
-                    if (useAlphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
                 {
@@ -206,10 +247,11 @@ namespace ShaderGraphImporter
                 // replace default shader graph editor with default editor, keeps the same if its custom
                 else if (trimmed.StartsWith("CustomEditorForRenderPipeline \"", StringComparison.Ordinal))
                 {
-                    string customEditor = trimmed.Remove(0, ("CustomEditorForRenderPipeline ").Length);
-                   if (customEditor.EndsWith("\"\"")) customEditor = customEditor.Remove(customEditor.Length - 4, 3); // remove double quotes at the end
+                    // string customEditor = trimmed.Remove(0, ("CustomEditorForRenderPipeline ").Length);
+                    // if (customEditor.EndsWith("\"\"")) customEditor = customEditor.Remove(customEditor.Length - 4, 3); // remove double quotes at the end
 
-                     input[index] = "CustomEditor " + (customEditor.Contains("UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInLitGUI") ? DefaultEditor : customEditor);
+                    //input[index] = "CustomEditor " + (customEditor.Contains("UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInLitGUI") ? importerSettings.shaderInspector : customEditor);
+                    input[index] = "CustomEditor \"" + importerSettings.CustomEditor + "\"";
                 }
                 
 
@@ -217,21 +259,40 @@ namespace ShaderGraphImporter
             }
         }
 
-        private static void ImportShader(ref string shaderCode)
+        internal static void ImportShader(ref ImporterSettings importerSettings)
         {
-            var fileLines = shaderCode.Split('\n');
+            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = DefaultImportPath;
+            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
 
-            var fileName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
 
-            fileLines[0] = $"Shader \"Shader Graphs/{fileName}\"";
+            var fileLines = importerSettings.shaderCode.Split('\n');
 
-            EditShaderFile(ref fileLines);
+            var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
 
-            if (!Directory.Exists(ImportPath))
+            shaderName = $"Shader Graphs/{shaderName}";
+
+            if (string.IsNullOrEmpty(importerSettings.shaderName)) importerSettings.shaderName = shaderName;
+
+            fileLines[0] = $"Shader \"{importerSettings.shaderName}\"";
+
+            EditShaderFile(ref fileLines, importerSettings);
+
+            if (!Directory.Exists(importerSettings.importPath))
             {
-                System.IO.Directory.CreateDirectory(ImportPath);
+                System.IO.Directory.CreateDirectory(importerSettings.importPath);
             }
-            string shaderPath = ImportPath + fileName + ".shader";
+
+            var fileName = importerSettings.shaderName.Replace('/', ' ');
+
+            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = fileName;
+
+
+            
+
+            if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
+
+
+            string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
             File.WriteAllLines(shaderPath, fileLines);
 
             AssetDatabase.Refresh();
@@ -242,7 +303,6 @@ namespace ShaderGraphImporter
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
         private static void ApplyDFG(string shaderPath)
         {
-            if (!useDFGMultiscatter) return;
 
             var texture = AssetDatabase.LoadAssetAtPath(DFGLutPath, typeof(Texture2D)) as Texture2D;
 

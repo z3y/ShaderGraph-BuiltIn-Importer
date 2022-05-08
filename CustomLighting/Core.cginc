@@ -4,6 +4,14 @@
 #include "CommonFunctions.cginc"
 #include "NonImportantLights.cginc"
 
+#ifndef OVERRIDE_SHADING
+#define OVERRIDE_SHADING 1;
+#endif
+
+#ifndef OVERRIDE_FINALCOLOR
+#define OVERRIDE_FINALCOLOR 1;
+#endif
+
 half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf)
 {
     #if defined(LOD_FADE_CROSSFADE)
@@ -42,7 +50,6 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf)
 
     half3 indirectSpecular = 0.0;
     half3 directSpecular = 0.0;
-    half3 otherSpecular = 0.0;
 
     half roughness = surf.perceptualRoughness * surf.perceptualRoughness;
     half clampedRoughness = max(roughness, 0.002);
@@ -81,7 +88,7 @@ half3 indirectDiffuse = 0;
 
 
     #ifdef BAKERY_SH
-        BakerySHLightmapAndSpecular(lightMap, lightmapUV, otherSpecular, worldNormal, viewDir, roughness, f0);
+        BakerySHLightmapAndSpecular(lightMap, lightmapUV, indirectSpecular, worldNormal, viewDir, roughness, f0);
     #endif
 
     #if defined(DIRLIGHTMAP_COMBINED)
@@ -152,9 +159,16 @@ half3 indirectDiffuse = 0;
         surf.albedo.rgb = lerp(1.0, surf.albedo.rgb, surf.alpha);
     #endif
 
-    otherSpecular *= EnvBRDFMultiscatter(DFGLut, f0) * DFGEnergyCompensation;
+    #ifdef SHADER_API_MOBILE
+        indirectSpecular *= EnvBRDFApprox(surf.perceptualRoughness, NoV, f0);
+    #else
+        indirectSpecular *= DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
+    #endif
     
-    half4 finalColor = half4(surf.albedo.rgb * (1.0 - surf.metallic) * (indirectDiffuse * surf.occlusion + (lightData.FinalColor)) + indirectSpecular + (directSpecular * UNITY_PI) + otherSpecular + surf.emission, surf.alpha);
+
+    OVERRIDE_SHADING
+
+    half4 finalColor = half4(surf.albedo.rgb * (1.0 - surf.metallic) * (indirectDiffuse * surf.occlusion + lightData.FinalColor) + indirectSpecular + directSpecular + surf.emission, surf.alpha);
 
     #ifdef UNITY_PASS_META
         UnityMetaInput metaInput;
@@ -166,6 +180,8 @@ half3 indirectDiffuse = 0;
 
     
     UNITY_APPLY_FOG(i.fogCoord, finalColor);
+
+    OVERRIDE_FINALCOLOR
     
     return finalColor;
 #endif

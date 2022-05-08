@@ -190,18 +190,18 @@ half3 GetF0(half reflectance, half metallic, half3 albedo)
     return 0.16 * reflectance * reflectance * (1.0 - metallic) + albedo * metallic;
 }
 
-struct LightDataCustom
-{
-    half3 Color;
-    float3 Direction;
-    half NoL;
-    half LoH;
-    half NoH;
-    float3 HalfVector;
-    half3 FinalColor;
-    half3 Specular;
-    half Attenuation;
-};
+// struct LightDataCustom
+// {
+//     half3 Color;
+//     float3 Direction;
+//     half NoL;
+//     half LoH;
+//     half NoH;
+//     float3 HalfVector;
+//     half3 FinalColor;
+//     half3 Specular;
+//     half Attenuation;
+// };
 
 half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughness, half3 f0)
 {
@@ -209,7 +209,7 @@ half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughne
     half D = D_GGX(lightData.NoH, clampedRoughness);
     half V = V_SmithGGXCorrelated(NoV, lightData.NoL, clampedRoughness);
 
-    return max(0.0, (D * V) * F) * lightData.FinalColor;
+    return max(0.0, (D * V) * F) * lightData.FinalColor * UNITY_PI;
 }
 
 void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float3 viewDir, half NoV, half clampedRoughness, half perceptualRoughness, half3 f0, v2f_surf input)
@@ -273,18 +273,14 @@ half3 GetReflections(float3 normalWS, float3 positionWS, float3 viewDir, half3 f
         #endif
 
         float horizon = min(1.0 + dot(reflDir, normalWS), 1.0);
+        indirectSpecular *= horizon * horizon;
         
         // half lightmapOcclusion = lerp(1.0, saturate(dot(indirectDiffuse, 1.0)), _SpecularOcclusion);
 
         // #ifdef LIGHTMAP_ANY
         //     surf.occlusion *= lightmapOcclusion;
         // #endif
-
-        #ifdef SHADER_API_MOBILE
-            indirectSpecular = indirectSpecular * horizon * horizon * EnvBRDFApprox(surf.perceptualRoughness, NoV, f0);
-        #else
-            indirectSpecular = indirectSpecular * horizon * horizon * DFGEnergyCompensation * EnvBRDFMultiscatter(DFGLut, f0);
-        #endif
+        
 
         indirectSpecular *= computeSpecularAO(NoV, surf.occlusion, surf.perceptualRoughness * surf.perceptualRoughness);
 

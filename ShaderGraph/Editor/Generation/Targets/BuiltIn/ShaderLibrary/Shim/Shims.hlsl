@@ -31,6 +31,21 @@
 #include "AutoLight.cginc"
 
 
+
+struct LightDataCustom
+{
+    half3 Color;
+    float3 Direction;
+    half NoL;
+    half LoH;
+    half NoH;
+    float3 HalfVector;
+    half3 FinalColor;
+    half3 Specular;
+    half Attenuation;
+};
+
+
 #ifdef POINT
 #   define COPY_FROM_LIGHT_COORDS(dest, src) dest = src._LightCoord
 #   define COPY_TO_LIGHT_COORDS(dest, src) dest._LightCoord.xyz = src.xyz

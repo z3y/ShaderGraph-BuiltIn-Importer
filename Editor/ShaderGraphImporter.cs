@@ -36,9 +36,9 @@ namespace ShaderGraphImporter
             }
 
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
-            _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
-            _settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
-            _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            //_settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
+            //_settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
             _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
             _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 

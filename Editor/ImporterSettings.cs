@@ -19,6 +19,7 @@ namespace ShaderGraphImporter
         public bool ltcgi = false;
         public bool stencil = false;
         public string fileName;
+        public string fallback;
         public string[] cgInclude;
     }
 }

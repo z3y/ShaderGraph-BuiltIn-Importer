@@ -75,9 +75,13 @@ namespace ShaderGraphImporter
             _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
             _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 
+            _settings.fallback = EditorGUILayout.TextField("Fallback", _settings.fallback);
+
+            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
+
             using (new GUILayout.HorizontalScope())
             {
-                _settings.importPath = EditorGUILayout.TextField("Import Path", _settings.importPath);
+                _settings.importPath = EditorGUILayout.TextField("File Path", _settings.importPath);
                 if (GUILayout.Button("Select"))
                 {
                     _settings.importPath = EditorUtility.OpenFolderPanel("Shader Path", "", "");
@@ -98,7 +102,6 @@ namespace ShaderGraphImporter
                 }
             }
 
-            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
 
 
             GUILayout.EndVertical();
@@ -396,7 +399,11 @@ namespace ShaderGraphImporter
                     //input[index] = "CustomEditor " + (customEditor.Contains("UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInLitGUI") ? importerSettings.shaderInspector : customEditor);
                     input[index] = "CustomEditor \"" + importerSettings.CustomEditor + "\"";
                 }
-                
+                else if (trimmed.StartsWith("FallBack \"Hidden", StringComparison.Ordinal))
+                {
+                    input[index] = "Fallback \"" + importerSettings.fallback + "\"";
+                }
+
 
 
             }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 namespace ShaderGraphImporter
@@ -13,15 +14,27 @@ namespace ShaderGraphImporter
         private ImporterSettings _settings;
 
         private Vector2 _scrollPosition;
+        private ReorderableList _reorderableList;
+
+        private bool firstTime = true;
+
+        SerializedProperty elements;
         public override void OnInspectorGUI()
         {
             _settings = (ImporterSettings)target;
 
-
+            if (firstTime)
+            {
+                elements = serializedObject.FindProperty("cgInclude");
+                _reorderableList = new ReorderableList(serializedObject, elements);
+                _reorderableList.drawElementCallback = DrawListItems;
+                _reorderableList.drawHeaderCallback = DrawHeader;
+                firstTime = false;
+            }
             EditorGUI.BeginChangeCheck();
             Undo.RecordObject(_settings, "Shader Graph Importer Settings");
 
-
+            EditorGUILayout.Space();
             if (GUILayout.Button("Paste & Import"))
             {
                 _settings.shaderCode = GUIUtility.systemCopyBuffer;
@@ -29,6 +42,7 @@ namespace ShaderGraphImporter
             }
 
             EditorGUILayout.Space();
+
 
             using (new GUILayout.HorizontalScope())
             {
@@ -45,15 +59,19 @@ namespace ShaderGraphImporter
             }
             EditorGUILayout.Space();
 
-
+            EditorGUILayout.LabelField("Features", EditorStyles.boldLabel);
+            GUILayout.BeginVertical("box");
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
             _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
 
+            GUILayout.EndVertical();
 
             EditorGUILayout.Space();
+            GUILayout.BeginVertical("box");
+
             _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
             _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 
@@ -82,7 +100,11 @@ namespace ShaderGraphImporter
 
             _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
 
-            EditorGUILayout.Space();
+
+            GUILayout.EndVertical();
+            _reorderableList.DoLayoutList();
+
+            //EditorGUILayout.Space();
             EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
             _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
             if (_settings.showCode)
@@ -95,8 +117,20 @@ namespace ShaderGraphImporter
 
             if (EditorGUI.EndChangeCheck())
             {
+                serializedObject.ApplyModifiedProperties();
                 EditorUtility.SetDirty(_settings);
             }
+        }
+
+        void DrawListItems(Rect rect, int index, bool isActive, bool isFocused)
+        {
+            var element = elements.GetArrayElementAtIndex(index);
+            EditorGUI.PropertyField(rect,element,GUIContent.none);
+        }
+
+        void DrawHeader(Rect rect)
+        {
+            EditorGUI.LabelField(rect, "HLSLINCLUDE");
         }
     }
 
@@ -239,8 +273,11 @@ namespace ShaderGraphImporter
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
 
-
-                        for (int j = 0; j < predefined.Count; j++)
+                    for (int j = 0; j < importerSettings.cgInclude.Length; j++)
+                    {
+                        sb.AppendLine(importerSettings.cgInclude[j]);
+                    }
+                    for (int j = 0; j < predefined.Count; j++)
                     {
                         sb.AppendLine(predefined[j]);
                     }
@@ -274,6 +311,8 @@ namespace ShaderGraphImporter
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
+                    input[index] += "\n#pragma multi_compile_fragment _ VERTEXLIGHT_ON";
+
                     if (importerSettings.bakeryFeatures)
                     {
                         input[index] += "\n#pragma shader_feature_local_fragment BAKERY_SH";

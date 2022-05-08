@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace ShaderGraphImporter
 {
@@ -18,5 +19,6 @@ namespace ShaderGraphImporter
         public bool ltcgi = false;
         public bool stencil = false;
         public string fileName;
+        public string[] cgInclude;
     }
 }

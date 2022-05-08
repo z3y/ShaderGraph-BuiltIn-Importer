@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Xml.Linq;
 using UnityEditor;
 using UnityEngine;
-using Directory = UnityEngine.Windows.Directory;
 
 namespace ShaderGraphImporter
 {
@@ -21,25 +17,72 @@ namespace ShaderGraphImporter
         {
             _settings = (ImporterSettings)target;
 
+
             EditorGUI.BeginChangeCheck();
             Undo.RecordObject(_settings, "Shader Graph Importer Settings");
+
 
             if (GUILayout.Button("Paste & Import"))
             {
                 _settings.shaderCode = GUIUtility.systemCopyBuffer;
                 Importer.ImportShader(ref _settings);
             }
-            if (GUILayout.Button("Re-Import"))
+
+            EditorGUILayout.Space();
+
+            using (new GUILayout.HorizontalScope())
             {
-                Importer.ImportShader(ref _settings);
+                if (GUILayout.Button("Re-Import"))
+                {
+                    Importer.ImportShader(ref _settings);
+                }
+                if (GUILayout.Button("Ping"))
+                {
+                    var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
+                    if (shaderObject is null) return;
+                    EditorGUIUtility.PingObject(shaderObject);
+                }
             }
-            if (GUILayout.Button("Ping"))
+            EditorGUILayout.Space();
+
+
+            _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
+            //_settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
+            //_settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+
+
+            EditorGUILayout.Space();
+            _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
+            _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
+
+            using (new GUILayout.HorizontalScope())
             {
-                var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
-                if (shaderObject is null) return;
-                EditorGUIUtility.PingObject(shaderObject);
+                _settings.importPath = EditorGUILayout.TextField("Import Path", _settings.importPath);
+                if (GUILayout.Button("Select"))
+                {
+                    _settings.importPath = EditorUtility.OpenFolderPanel("Shader Path", "", "");
+                    if (_settings.importPath.StartsWith(Application.dataPath))
+                    {
+                        _settings.importPath = "Assets" + _settings.importPath.Substring(Application.dataPath.Length);
+                    }
+                }
             }
 
+
+            using (new GUILayout.HorizontalScope())
+            {
+                _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
+                if (GUILayout.Button("Select"))
+                {
+                    _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
+                }
+            }
+
+            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
+
+            EditorGUILayout.Space();
+            EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
             _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
             if (_settings.showCode)
             {
@@ -48,34 +91,7 @@ namespace ShaderGraphImporter
                 EditorGUILayout.EndScrollView();
             }
 
-            _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
-            //_settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
-            //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
-            //_settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
-            _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
-            _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 
-            EditorGUILayout.BeginHorizontal();
-            _settings.importPath = EditorGUILayout.TextField("Import Path", _settings.importPath);
-            if (GUILayout.Button("Select"))
-            {
-                _settings.importPath = EditorUtility.OpenFolderPanel("Shader Path", "", "");
-                if (_settings.importPath.StartsWith(Application.dataPath))
-                {
-                    _settings.importPath = "Assets" + _settings.importPath.Substring(Application.dataPath.Length);
-                }
-            }
-            EditorGUILayout.EndHorizontal();
-
-            EditorGUILayout.BeginHorizontal();
-            _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
-            if (GUILayout.Button("Select"))
-            {
-                _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
-            }
-            EditorGUILayout.EndHorizontal();
-
-            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
             if (EditorGUI.EndChangeCheck())
             {
                 EditorUtility.SetDirty(_settings);

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace ShaderGraphImporter
 {
@@ -19,6 +17,5 @@ namespace ShaderGraphImporter
         public bool ltcgi = false;
         public bool stencil = false;
         public string fileName;
-        //public string[] predefinedKeywords;
     }
 }

@@ -104,11 +104,6 @@ half3 indirectDiffuse = 0;
     indirectDiffuse += realtimeLightMap; 
 #endif
 
-#if defined(LIGHTMAP_SHADOW_MIXING) && !defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN)
-    lightData.FinalColor = 0.0;
-    lightData.Specular = 0.0;
-    indirectDiffuse = SubtractMainLightWithRealtimeAttenuationFromLightmap (indirectDiffuse, lightData.Attenuation, bakedColorTex, worldNormal);
-#endif
 
 
     #if !defined(LIGHTMAP_ON) && !defined(DYNAMICLIGHTMAP_ON)
@@ -123,6 +118,12 @@ half3 indirectDiffuse = 0;
 #endif
 
 
+#if defined(LIGHTMAP_SHADOW_MIXING) && !defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN)
+    lightData.FinalColor = 0.0;
+    lightData.Specular = 0.0;
+    directSpecular = 0.0;
+    indirectDiffuse = SubtractMainLightWithRealtimeAttenuationFromLightmap (indirectDiffuse, lightData.Attenuation, bakedColorTex, worldNormal);
+#endif
 
     #if defined(LIGHTMAPPED_SPECULAR) && defined(UNITY_PASS_FORWARDBASE) && !defined(BAKERY_SH)
     {

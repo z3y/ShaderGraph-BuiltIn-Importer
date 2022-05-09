@@ -5,7 +5,7 @@ How to use:
 - Download and install Unity 2021 LTS and import Shader Graph (12.1.6) from the package manager.
 - Create a Shader using Shader Graph with built-in target.
 - Save Asset, Show In Project and Copy Shader
-- Import this package using git URL in the Package Manager in Unity 2019.4 or later
+- Import this package using git URL `https://github.com/z3y/ShaderGraph-BuiltIn.git` in the Package Manager in Unity 2019.4 or later
 - Create a new importer object `Create > Shader > Shader Graph Importer`
 - Paste and Import
 

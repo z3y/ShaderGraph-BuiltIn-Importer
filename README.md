@@ -1,4 +1,4 @@
-ShaderGraph built-in importer with custom shading and bug fixes. Target version is 2019.4 (VRChat). Shader Graph supports built-in pipeline natively in 2021+, this package only aims to fix bugs, make it usable in VRChat with both lit and unlit modes and provide some improvements.
+ShaderGraph built-in importer with custom shading and bug fixes. Target version is 2019.4 (VRChat). Shader Graph supports built-in pipeline natively in 2021+, this package only aims to fix bugs, make it usable in VRChat with both lit and unlit modes and provide some improvements. Experimental, might have breaking changes in the future.
 
 
 How to use:

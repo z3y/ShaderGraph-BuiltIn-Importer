@@ -13,6 +13,8 @@ By default blank fields will be automatically filled with default and detected v
 
 Includes Bakery features and better shading than Standard
 
+Notable bug fixes: GPU Instancing, Single Pass, Single Pass Instanced
+
 
 Shader Graph and Built-In shader code owned by Unity, Licensed under Unity Companion License:
 https://unity3d.com/legal/licenses/Unity_Companion_License

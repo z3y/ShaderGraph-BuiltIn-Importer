@@ -232,7 +232,7 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
         #endif
 
         #if defined(LIGHTMAP_SHADOW_MIXING) && defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) && defined(LIGHTMAP_ON)
-            lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input.screenPos);
+            lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);
         #endif
 
         #ifndef _SPECULARHIGHLIGHTS_OFF

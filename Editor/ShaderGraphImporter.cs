@@ -276,9 +276,12 @@ namespace ShaderGraphImporter
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
 
-                    for (int j = 0; j < importerSettings.cgInclude.Length; j++)
+                    if (importerSettings.cgInclude != null)
                     {
-                        sb.AppendLine(importerSettings.cgInclude[j]);
+                        for (int j = 0; j < importerSettings.cgInclude.Length; j++)
+                        {
+                            sb.AppendLine(importerSettings.cgInclude[j]);
+                        }
                     }
                     for (int j = 0; j < predefined.Count; j++)
                     {

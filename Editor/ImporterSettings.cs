@@ -18,6 +18,7 @@ namespace ShaderGraphImporter
         public bool specularOcclusion = false;
         public bool ltcgi = false;
         public bool stencil = false;
+        public bool includeAudioLink = false;
         public string fileName;
         public string fallback;
         public string[] cgInclude;

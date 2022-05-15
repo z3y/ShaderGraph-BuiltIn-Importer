@@ -66,6 +66,7 @@ namespace ShaderGraphImporter
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            _settings.includeAudioLink = EditorGUILayout.ToggleLeft(new GUIContent("Include AudioLink", "Only includes AudioLink.cginc so it can be used with graph"), _settings.includeAudioLink);
 
             GUILayout.EndVertical();
 
@@ -142,7 +143,8 @@ namespace ShaderGraphImporter
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
         private const string DefaultImportPath = "Assets/ShaderGraph/";
 
-        private const string ltcgiInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
 
         private static readonly string[] ReplaceLines =
         {
@@ -334,7 +336,12 @@ namespace ShaderGraphImporter
 
                 if (importerSettings.ltcgi && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))
                 {
-                    input[index] =  ltcgiInclude + '\n' + input[index];
+                    input[index] =  LTCGIInclude + '\n' + input[index];
+                }
+
+                if (importerSettings.includeAudioLink && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shim/Shims.hlsl\"", StringComparison.Ordinal))
+                {
+                    input[index] = input[index] + '\n' + AudioLinkInclude;
                 }
 
 

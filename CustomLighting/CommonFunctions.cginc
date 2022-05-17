@@ -232,11 +232,6 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             lightData.FinalColor *= Fd_Burley(perceptualRoughness, NoV, lightData.NoL, lightData.LoH);
         #endif
 
-        #if defined(LIGHTMAP_SHADOW_MIXING) && defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) && defined(LIGHTMAP_ON)
-            lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);
-        #endif
-
-        
 
         #ifndef _SPECULARHIGHLIGHTS_OFF
         lightData.Specular = MainLightSpecular(lightData, NoV, clampedRoughness, f0);
@@ -262,6 +257,10 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             lightData.FinalColor = properLightColor * max(0.0001, (target / properLuminance));
 
             lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
+        #endif
+
+        #if defined(LIGHTMAP_SHADOW_MIXING) && defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) && defined(LIGHTMAP_ON)
+            lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);
         #endif
     #else
         lightData = (LightDataCustom)0;

@@ -41,22 +41,7 @@ namespace ShaderGraphImporter
                 Importer.ImportShader(ref _settings);
             }
 
-            EditorGUILayout.Space();
-
-
-            using (new GUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("Re-Import"))
-                {
-                    Importer.ImportShader(ref _settings);
-                }
-                if (GUILayout.Button("Ping"))
-                {
-                    var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
-                    if (shaderObject is null) return;
-                    EditorGUIUtility.PingObject(shaderObject);
-                }
-            }
+            
             EditorGUILayout.Space();
 
             EditorGUILayout.LabelField("Features", EditorStyles.boldLabel);
@@ -109,7 +94,25 @@ namespace ShaderGraphImporter
             GUILayout.EndVertical();
             _reorderableList.DoLayoutList();
 
-            //EditorGUILayout.Space();
+            EditorGUILayout.Space();
+
+
+            using (new GUILayout.HorizontalScope())
+            {
+                if (GUILayout.Button("Select"))
+                {
+                    var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
+                    if (shaderObject is null) return;
+                    EditorGUIUtility.PingObject(shaderObject);
+                }
+                if (GUILayout.Button("Apply"))
+                {
+                    Importer.ImportShader(ref _settings);
+                }
+            }
+
+
+            EditorGUILayout.Space();
             EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
             _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
             if (_settings.showCode)

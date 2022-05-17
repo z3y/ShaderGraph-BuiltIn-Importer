@@ -61,6 +61,7 @@ namespace ShaderGraphImporter
 
             EditorGUILayout.LabelField("Features", EditorStyles.boldLabel);
             GUILayout.BeginVertical("box");
+            _settings.shadingModel = (ShadingModel)EditorGUILayout.EnumPopup("Shading Model", _settings.shadingModel);
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
             _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
@@ -145,6 +146,8 @@ namespace ShaderGraphImporter
 
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
+
+        public const int ImporterFeatureVersion = 1;
 
         private static readonly string[] ReplaceLines =
         {
@@ -272,11 +275,27 @@ namespace ShaderGraphImporter
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
 
-                    sb.AppendLine("#define IMPORTER_VERSION 1");
+                    sb.AppendLine("#define IMPORTER_VERSION " + ImporterFeatureVersion);
+
+                    switch (importerSettings.shadingModel)
+                    {
+                        case ShadingModel.Lit:
+                            sb.AppendLine("#define SHADINGMODEL_LIT");
+                            break;
+                        case ShadingModel.FlatLit:
+                            sb.AppendLine("#define SHADINGMODEL_FLATLIT");
+                            sb.AppendLine("#define _SPECULARHIGHLIGHTS_OFF");
+                            sb.AppendLine("#define _GLOSSYREFLECTIONS_OFF");
+                            sb.AppendLine("#pragma skip_variants SHADOWS_SCREEN");
+                            sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");
+                            sb.AppendLine("#pragma skip_variants SHADOWS_CUBE");
+                            break;
+                    }
 
                     sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
+                    
 
                     if (importerSettings.cgInclude != null)
                     {

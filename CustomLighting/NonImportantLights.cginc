@@ -26,7 +26,12 @@ void NonImportantLightsPerPixel(inout half3 lightColor, inout half3 directSpecul
             float3 direction = normalize(float3(unity_4LightPosX0[i], unity_4LightPosY0[i], unity_4LightPosZ0[i]) - positionWS);
             half NoL = saturate(dot(normalWS, direction));
             half3 color = NoL * attenuation[i] * unity_LightColor[i];
-            lightColor += color;
+            
+            #ifdef SHADINGMODEL_FLATLIT
+                lightColor += attenuation[i] * unity_LightColor[i];
+            #else
+                lightColor += color;
+            #endif
 
             #ifndef SPECULAR_HIGHLIGHTS_OFF
                 float3 halfVector = Unity_SafeNormalize(direction + viewDir);

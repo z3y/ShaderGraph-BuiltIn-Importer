@@ -125,6 +125,7 @@ float shEvaluateDiffuseL1Geomerics(float L0, float3 L1, float3 n)
     return R0 * (a + (1.0f - a) * (p + 1.0f) * pow(q, p));
 }
 
+#include "FlatLit.cginc"
 
 #ifdef DYNAMICLIGHTMAP_ON
 float3 getRealtimeLightmap(float2 uv, float3 worldNormal)
@@ -235,10 +236,32 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);
         #endif
 
+        
+
         #ifndef _SPECULARHIGHLIGHTS_OFF
         lightData.Specular = MainLightSpecular(lightData, NoV, clampedRoughness, f0);
         #else
         lightData.Specular = 0.0;
+        #endif
+
+        #ifdef SHADINGMODEL_FLATLIT
+            // based on poiyomi flat lit because im bad at toon
+            half3 magic = max(BetterSH9(normalize(unity_SHAr + unity_SHAg + unity_SHAb)), 0);
+            half3 normalLight = _LightColor0.rgb + BetterSH9(float4(0, 0, 0, 1));
+            
+            half magiLumi = calculateluminance(magic);
+            half normaLumi = calculateluminance(normalLight);
+            half maginormalumi = magiLumi + normaLumi;
+            
+            half magiratio = magiLumi / maginormalumi;
+            half normaRatio = normaLumi / maginormalumi;
+            
+            half target = calculateluminance(magic * magiratio + normalLight * normaRatio);
+            half3 properLightColor = magic + normalLight;
+            half properLuminance = calculateluminance(magic + normalLight);
+            lightData.FinalColor = properLightColor * max(0.0001, (target / properLuminance));
+
+            lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
         #endif
     #else
         lightData = (LightDataCustom)0;
@@ -290,29 +313,35 @@ half3 GetReflections(float3 normalWS, float3 positionWS, float3 viewDir, half3 f
     return indirectSpecular;
 }
 
+
 half3 GetLightProbes(float3 normalWS, float3 positionWS)
 {
     half3 indirectDiffuse = 0;
-    #ifndef LIGHTMAP_ANY
-        #if UNITY_LIGHT_PROBE_PROXY_VOLUME
-            UNITY_BRANCH
-            if (unity_ProbeVolumeParams.x == 1.0)
-            {
-                indirectDiffuse = SHEvalLinearL0L1_SampleProbeVolume(float4(normalWS, 1.0), positionWS);
-            }
-            else
-            {
-        #endif
-                #ifdef BAKERY_PROBESHNONLINEAR
-                    float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
-                    indirectDiffuse.r = shEvaluateDiffuseL1Geomerics(L0.r, unity_SHAr.xyz, normalWS);
-                    indirectDiffuse.g = shEvaluateDiffuseL1Geomerics(L0.g, unity_SHAg.xyz, normalWS);
-                    indirectDiffuse.b = shEvaluateDiffuseL1Geomerics(L0.b, unity_SHAb.xyz, normalWS);
-                #else
-                indirectDiffuse = ShadeSH9(float4(normalWS, 1.0));
-                #endif
-        #if UNITY_LIGHT_PROBE_PROXY_VOLUME
-            }
+
+    #ifdef SHADINGMODEL_FLATLIT
+
+    #else
+        #ifndef LIGHTMAP_ANY
+            #if UNITY_LIGHT_PROBE_PROXY_VOLUME
+                UNITY_BRANCH
+                if (unity_ProbeVolumeParams.x == 1.0)
+                {
+                    indirectDiffuse = SHEvalLinearL0L1_SampleProbeVolume(float4(normalWS, 1.0), positionWS);
+                }
+                else
+                {
+            #endif
+                    #ifdef BAKERY_PROBESHNONLINEAR
+                        float3 L0 = float3(unity_SHAr.w, unity_SHAg.w, unity_SHAb.w);
+                        indirectDiffuse.r = shEvaluateDiffuseL1Geomerics(L0.r, unity_SHAr.xyz, normalWS);
+                        indirectDiffuse.g = shEvaluateDiffuseL1Geomerics(L0.g, unity_SHAg.xyz, normalWS);
+                        indirectDiffuse.b = shEvaluateDiffuseL1Geomerics(L0.b, unity_SHAb.xyz, normalWS);
+                    #else
+                    indirectDiffuse = ShadeSH9(float4(normalWS, 1.0));
+                    #endif
+            #if UNITY_LIGHT_PROBE_PROXY_VOLUME
+                }
+            #endif
         #endif
     #endif
     return indirectDiffuse;

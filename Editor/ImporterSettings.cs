@@ -14,7 +14,7 @@ namespace ShaderGraphImporter
         public string importPath;
         public string CustomEditor;
         public bool showCode = false; // prevent inspector lag
-        public bool bakeryFeatures = false;
+        public bool bakeryFeatures = true;
         public bool specularOcclusion = false;
         public bool ltcgi = false;
         public bool stencil = false;
@@ -22,5 +22,9 @@ namespace ShaderGraphImporter
         public string fileName;
         public string fallback;
         public string[] cgInclude;
+        public ShadingModel shadingModel = ShadingModel.Lit;
     }
+
+    public enum ShadingModel { Lit, FlatLit };
+
 }

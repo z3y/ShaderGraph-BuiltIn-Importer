@@ -43,8 +43,13 @@ namespace ShaderGraphImporter
 
         private static bool surfaceOptionsFoldout = true;
         private static bool surfaceInputsFoldout = true;
+        private static bool additionalSettingsFoldout = true;
+
+        private int additionalPropertiesStart = 0;
 
         private int propCount = 0;
+
+        private bool missingLut = false;
 
         public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
@@ -52,7 +57,8 @@ namespace ShaderGraphImporter
             if (_firstTime || propCount != properties.Length)
             {
                 propCount = properties.Length;
-                _shader = (materialEditor.target as Material).shader;
+                var material = materialEditor.target as Material;
+                _shader = material.shader;
                 _hasOverrideProperties = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_Surface", StringComparison.Ordinal)) != -1;
 
                 _BUILTIN_Surface = Array.FindIndex(properties, x => x.name.Equals("_BUILTIN_Surface", StringComparison.Ordinal));
@@ -67,9 +73,20 @@ namespace ShaderGraphImporter
                 _AlphaToMask = Array.FindIndex(properties, x => x.name.Equals("_AlphaToMask", StringComparison.Ordinal));
 
                 _firstTime = false;
+
+                missingLut = material.GetTexture("_DFG") == null;
+
+
+
             }
 
-            EditorGUI.indentLevel++;
+            if (missingLut)
+            {
+                EditorGUILayout.LabelField("DFG Lut missing");
+                return;
+            }
+
+
             if (_hasOverrideProperties)
             {
                 if (surfaceOptionsFoldout = DrawHeaderFoldout(new GUIContent("Surface Options"), surfaceOptionsFoldout))
@@ -84,8 +101,6 @@ namespace ShaderGraphImporter
                     {
                         materialEditor.ShaderProperty(properties[_BUILTIN_Blend], new GUIContent("Blending Mode"));
                     }
-
-                    materialEditor.ShaderProperty(properties[_BUILTIN_CullMode], new GUIContent("Cull"));
                     materialEditor.ShaderProperty(properties[_BUILTIN_AlphaClip], new GUIContent("Alpha Clipping"));
 
                     bool alphaToMaskEnabled = false;
@@ -93,9 +108,6 @@ namespace ShaderGraphImporter
                     {
                         alphaToMaskEnabled = true;
                     }
-
-
-
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -106,6 +118,13 @@ namespace ShaderGraphImporter
                         }
                     }
 
+                    materialEditor.ShaderProperty(properties[_BUILTIN_CullMode], new GUIContent("Cull"));
+                    materialEditor.ShaderProperty(properties[_BUILTIN_SrcBlend], new GUIContent("SrcBlend"));
+                    materialEditor.ShaderProperty(properties[_BUILTIN_DstBlend], new GUIContent("DstBlend"));
+                    materialEditor.ShaderProperty(properties[_BUILTIN_ZWrite], new GUIContent("ZWrite"));
+                    materialEditor.ShaderProperty(properties[_BUILTIN_ZTest], new GUIContent("ZTest"));
+
+
                     EditorGUILayout.Space();
 
                 }
@@ -113,8 +132,31 @@ namespace ShaderGraphImporter
 
             if (surfaceInputsFoldout = DrawHeaderFoldout(new GUIContent("Surface Inputs"), surfaceInputsFoldout))
             {
-
+                EditorGUILayout.Space();
                 for (int i = 0; i < properties.Length; i++)
+                {
+                    var property = properties[i];
+                    if (property.name.Equals("_BUILTIN_QueueControl", StringComparison.Ordinal))
+                    {
+                        additionalPropertiesStart = i;
+                        break;
+                    }
+
+                    if ((property.flags & MaterialProperty.PropFlags.HideInInspector) != 0)
+                    {
+                        continue;
+                    }
+
+                    materialEditor.ShaderProperty(property, new GUIContent(property.displayName));
+                }
+            }
+
+
+
+            if (additionalSettingsFoldout = DrawHeaderFoldout(new GUIContent("Additional Settings"), additionalSettingsFoldout))
+            {
+                EditorGUILayout.Space();
+                for (int i = additionalPropertiesStart; i < properties.Length; i++)
                 {
                     var property = properties[i];
 
@@ -123,29 +165,17 @@ namespace ShaderGraphImporter
                         continue;
                     }
 
-                    if (property.type == MaterialProperty.PropType.Texture)
-                    {
-                        materialEditor.TextureProperty(property, property.displayName);
-                        if ((property.flags & MaterialProperty.PropFlags.NoScaleOffset) == 0)
-                        {
-                        //    materialEditor.TextureScaleOffsetProperty(property);
-                        }
-                    }
-                    else
-                    {
-                        materialEditor.ShaderProperty(property, new GUIContent(property.displayName));
-                    }
+                    materialEditor.ShaderProperty(property, new GUIContent(property.displayName));
                 }
+
+
+                EditorGUILayout.Space();
+                materialEditor.RenderQueueField();
+                materialEditor.EnableInstancingField();
+                materialEditor.DoubleSidedGIField();
+                materialEditor.LightmapEmissionProperty();
             }
 
-            EditorGUI.indentLevel = 0;
-            EditorGUILayout.Space();
-            DrawSplitter();
-            EditorGUILayout.Space();
-            materialEditor.RenderQueueField();
-            materialEditor.EnableInstancingField();
-            materialEditor.DoubleSidedGIField();
-            materialEditor.LightmapEmissionProperty();
         }
 
         public static void SetupMaterialRenderingMode(Material material, SurfaceType surfaceType, BlendingMode blendingMode, bool alphaClipping, bool alphaToCoverage)

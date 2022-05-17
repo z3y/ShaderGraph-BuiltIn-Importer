@@ -1,6 +1,9 @@
 #ifndef CUSTOMSHADING_CORE_INCLUDED
 #define CUSTOMSHADING_CORE_INCLUDED
 
+#define VERTEXLIGHT_PS
+
+
 #include "CommonFunctions.cginc"
 #include "NonImportantLights.cginc"
 

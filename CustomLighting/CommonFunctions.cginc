@@ -65,7 +65,7 @@ half computeSpecularAO(half NoV, half ao, half roughness)
     return clamp(pow(NoV + ao, exp2(-16.0 * roughness - 1.0)) - 1.0 + ao, 0.0, 1.0);
 }
 
-half D_GGX(half NoH, half roughness)
+half D_GGX2(half NoH, half roughness)
 {
     half a = NoH * roughness;
     half k = roughness / (1.0 - NoH * NoH + a * a);
@@ -152,7 +152,7 @@ half3 GetSpecularHighlights(float3 worldNormal, half3 lightColor, float3 lightDi
     half LoH = saturate(dot(lightDirection, halfVector));
 
     half3 F = F_Schlick(LoH, f0);
-    half D = D_GGX(NoH, clampedRoughness);
+    half D = D_GGX2(NoH, clampedRoughness);
     half V = V_SmithGGXCorrelatedFast(NoV, NoL, clampedRoughness);
 
     #ifndef SHADER_API_MOBILE
@@ -207,7 +207,7 @@ half3 GetF0(half reflectance, half metallic, half3 albedo)
 half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughness, half3 f0)
 {
     half3 F = F_Schlick(lightData.LoH, f0) * DFGEnergyCompensation;
-    half D = D_GGX(lightData.NoH, clampedRoughness);
+    half D = D_GGX2(lightData.NoH, clampedRoughness);
     half V = V_SmithGGXCorrelated(NoV, lightData.NoL, clampedRoughness);
 
     return max(0.0, (D * V) * F) * lightData.FinalColor * UNITY_PI;

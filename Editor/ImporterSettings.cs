@@ -3,7 +3,7 @@ using UnityEngine;
 
 namespace ShaderGraphImporter
 {
-    [CreateAssetMenu(fileName = "ImporterSettings", menuName = "Shader/ShaderGraphImporter")]
+    [CreateAssetMenu(fileName = "Importer Settings", menuName = "Shader/Shader Graph Importer")]
     public class ImporterSettings : ScriptableObject
     {
         public string shaderName;

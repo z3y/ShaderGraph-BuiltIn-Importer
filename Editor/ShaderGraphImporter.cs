@@ -80,14 +80,14 @@ namespace ShaderGraphImporter
             }
 
 
-            using (new GUILayout.HorizontalScope())
-            {
-                _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
-                if (GUILayout.Button("Select"))
-                {
-                    _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
-                }
-            }
+            // using (new GUILayout.HorizontalScope())
+            // {
+            //     _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
+            //     if (GUILayout.Button("Select"))
+            //     {
+            //         _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
+            //     }
+            // }
 
 
 

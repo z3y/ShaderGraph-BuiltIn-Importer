@@ -248,9 +248,17 @@ namespace ShaderGraphImporter
                     {
                         input[index] = input[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
                         input[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
-                        
-                        input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
-                        input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
+
+                        if (importerSettings.shadingModel == ShadingModel.FlatLit)
+                        {
+                            input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0";
+                            input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0";
+                        }
+                        else
+                        {
+                            input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
+                            input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
+                        }
 
                         if (importerSettings.specularOcclusion)
                         {
@@ -297,8 +305,6 @@ namespace ShaderGraphImporter
                             break;
                         case ShadingModel.FlatLit:
                             sb.AppendLine("#define SHADINGMODEL_FLATLIT");
-                            sb.AppendLine("#define _SPECULARHIGHLIGHTS_OFF");
-                            sb.AppendLine("#define _GLOSSYREFLECTIONS_OFF");
                             sb.AppendLine("#pragma skip_variants SHADOWS_SCREEN");
                             sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");
                             sb.AppendLine("#pragma skip_variants SHADOWS_CUBE");

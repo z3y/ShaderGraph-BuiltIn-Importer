@@ -8,7 +8,7 @@ Shader "Shader Graphs/Standard Example"
         [Normal][NoScaleOffset]_BumpMap("BumpMap", 2D) = "bump" {}
         _BumpScale("BumpScale", Float) = 1
         [Toggle(_MASKMAP)]_MASKMAP("Mask Map", Float) = 0
-        [NoScaleOffset]_MetallicGlossMap("MetallicGlossMap", 2D) = "white" {}
+        [NoScaleOffset]_MetallicGlossMap("Mask Map", 2D) = "white" {}
         _Glossiness("Smoothness", Range(0, 1)) = 0.5
         _Metallic("Metallic", Range(0, 1)) = 0
         _OcclusionStrength("OcclusionStrength", Range(0, 1)) = 1

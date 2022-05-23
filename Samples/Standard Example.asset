@@ -17,8 +17,8 @@ MonoBehaviour:
     2D) = \"white\" {}\n        _Color(\"Color\", Color) = (1, 1, 1, 1)\n       
     [Toggle(_BUMPMAP)]_BUMPMAP(\"Normal Map\", Float) = 0\n        [Normal][NoScaleOffset]_BumpMap(\"BumpMap\",
     2D) = \"bump\" {}\n        _BumpScale(\"BumpScale\", Float) = 1\n        [Toggle(_MASKMAP)]_MASKMAP(\"Mask
-    Map\", Float) = 0\n        [NoScaleOffset]_MetallicGlossMap(\"MetallicGlossMap\",
-    2D) = \"white\" {}\n        _Glossiness(\"Smoothness\", Range(0, 1)) = 0.5\n       
+    Map\", Float) = 0\n        [NoScaleOffset]_MetallicGlossMap(\"Mask Map\", 2D)
+    = \"white\" {}\n        _Glossiness(\"Smoothness\", Range(0, 1)) = 0.5\n       
     _Metallic(\"Metallic\", Range(0, 1)) = 0\n        _OcclusionStrength(\"OcclusionStrength\",
     Range(0, 1)) = 1\n        [Toggle(_GSAA)]_GSAA(\"Geometric Specular AA\", Float)
     = 0\n        _specularAntiAliasingVariance(\"AA Variance\", Range(0, 1)) = 0\n       
@@ -5757,7 +5757,7 @@ MonoBehaviour:
   CustomEditor: ShaderGraphImporter.DefaultInspector
   showCode: 0
   bakeryFeatures: 1
-  specularOcclusion: 0
+  specularOcclusion: 1
   ltcgi: 0
   stencil: 0
   includeAudioLink: 0

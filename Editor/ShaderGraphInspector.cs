@@ -82,7 +82,7 @@ namespace ShaderGraphImporter
 
             if (missingLut)
             {
-                EditorGUILayout.LabelField("DFG Lut missing");
+                EditorGUILayout.LabelField("DFG Lut missing, reimport shader");
                 return;
             }
 

@@ -3,6 +3,13 @@
 
 #define VERTEXLIGHT_PS
 
+#ifdef SHADER_API_MOBILE
+    #undef VERTEXLIGHT_PS
+    #undef BAKERY_SH
+    #undef _BICUBICLIGHTMAP
+    #undef BAKERY_PROBESHNONLINEAR
+    #undef LTCGI
+#endif
 
 #include "CommonFunctions.cginc"
 #include "NonImportantLights.cginc"
@@ -48,8 +55,6 @@ half4 CustomLightingFrag (v2f_surf i, SurfaceDataCustom surf)
     #endif
 
     float3 worldNormal = surf.tangentNormal;
-    //float3 bitangent = float3(i.tSpace0.y,i.tSpace1.y,i.tSpace2.y);
-    //float3 tangent = float3(i.tSpace0.x,i.tSpace1.x,i.tSpace2.x);
 
     half3 indirectSpecular = 0.0;
     half3 directSpecular = 0.0;
@@ -145,7 +150,7 @@ half3 indirectDiffuse = 0;
         #endif
 
         bakedDominantDirection = normalize(bakedDominantDirection);
-        directSpecular += GetSpecularHighlights(worldNormal, bakedSpecularColor, bakedDominantDirection, f0, viewDir, clampedRoughness, NoV, DFGEnergyCompensation);
+        directSpecular += GetSpecularHighlights(worldNormal, bakedSpecularColor, bakedDominantDirection, f0, viewDir, clampedRoughness, NoV, DFGEnergyCompensation) * UNITY_PI;
     }
     #endif
 

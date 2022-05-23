@@ -320,7 +320,7 @@ half3 GetLightProbes(float3 normalWS, float3 positionWS)
     #ifdef SHADINGMODEL_FLATLIT
 
     #else
-        #ifndef LIGHTMAP_ANY
+        #ifndef LIGHTMAP_ON
             #if UNITY_LIGHT_PROBE_PROXY_VOLUME
                 UNITY_BRANCH
                 if (unity_ProbeVolumeParams.x == 1.0)

@@ -248,6 +248,9 @@ namespace ShaderGraphImporter
                     {
                         input[index] = input[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
                         input[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                        
+                        input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
+                        input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
 
                         if (importerSettings.specularOcclusion)
                         {
@@ -349,6 +352,9 @@ namespace ShaderGraphImporter
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
                     input[index] += "\n#pragma multi_compile_fragment _ VERTEXLIGHT_ON";
+                    
+                    input[index] += "\n#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF";
+                    input[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
 
                     if (importerSettings.bakeryFeatures)
                     {
@@ -366,6 +372,11 @@ namespace ShaderGraphImporter
                     {
                         input[index] += "\n#pragma shader_feature_local_fragment _BICUBICLIGHTMAP";
                     }
+                    
+                }
+                else if (trimmed.StartsWith("#pragma multi_compile_fwdadd_fullshadows", StringComparison.Ordinal))
+                {
+                    input[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
                 }
 
                 if (importerSettings.ltcgi && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))

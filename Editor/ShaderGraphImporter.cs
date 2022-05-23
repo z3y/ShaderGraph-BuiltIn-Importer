@@ -527,7 +527,7 @@ namespace ShaderGraphImporter
             AssetDatabase.Refresh();
 
             ApplyDFG(shaderPath);
-            AssetDatabase.Refresh();
+            AssetDatabase.ImportAsset(shaderPath, ImportAssetOptions.ImportRecursive);
         }
 
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";

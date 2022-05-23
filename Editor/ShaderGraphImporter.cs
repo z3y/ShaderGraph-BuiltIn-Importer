@@ -16,20 +16,22 @@ namespace ShaderGraphImporter
         private Vector2 _scrollPosition;
         private ReorderableList _reorderableList;
 
-        private bool firstTime = true;
+        private bool _firstTime = true;
 
-        SerializedProperty elements;
+        SerializedProperty _elements;
         public override void OnInspectorGUI()
         {
             _settings = (ImporterSettings)target;
 
-            if (firstTime)
+            if (_firstTime)
             {
-                elements = serializedObject.FindProperty("cgInclude");
-                _reorderableList = new ReorderableList(serializedObject, elements);
-                _reorderableList.drawElementCallback = DrawListItems;
-                _reorderableList.drawHeaderCallback = DrawHeader;
-                firstTime = false;
+                _elements = serializedObject.FindProperty("cgInclude");
+                _reorderableList = new ReorderableList(serializedObject, _elements)
+                {
+                    drawElementCallback = DrawListItems,
+                    drawHeaderCallback = DrawHeader
+                };
+                _firstTime = false;
             }
             EditorGUI.BeginChangeCheck();
             Undo.RecordObject(_settings, "Shader Graph Importer Settings");
@@ -133,7 +135,7 @@ namespace ShaderGraphImporter
 
         void DrawListItems(Rect rect, int index, bool isActive, bool isFocused)
         {
-            var element = elements.GetArrayElementAtIndex(index);
+            var element = _elements.GetArrayElementAtIndex(index);
             EditorGUI.PropertyField(rect,element,GUIContent.none);
         }
 
@@ -146,7 +148,7 @@ namespace ShaderGraphImporter
     internal static class Importer
     {
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
-        private const string DefaultImportPath = "Assets/ShaderGraph/";
+        //private const string DefaultImportPath = "Assets/ShaderGraph/";
 
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
@@ -307,14 +309,14 @@ namespace ShaderGraphImporter
 
                     if (importerSettings.cgInclude != null)
                     {
-                        for (int j = 0; j < importerSettings.cgInclude.Length; j++)
+                        foreach (var t in importerSettings.cgInclude)
                         {
-                            sb.AppendLine(importerSettings.cgInclude[j]);
+                            sb.AppendLine(t);
                         }
                     }
-                    for (int j = 0; j < predefined.Count; j++)
+                    foreach (var t in predefined)
                     {
-                        sb.AppendLine(predefined[j]);
+                        sb.AppendLine(t);
                     }
                     sb.AppendLine("ENDHLSL");
 
@@ -488,12 +490,13 @@ namespace ShaderGraphImporter
 
             if (!Directory.Exists(importerSettings.importPath))
             {
-                System.IO.Directory.CreateDirectory(importerSettings.importPath);
+                Directory.CreateDirectory(importerSettings.importPath);
             }
 
-            var fileName = importerSettings.shaderName.Replace('/', ' ');
+            //var fileName = importerSettings.shaderName.Replace('/', ' ');
+            var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
 
-            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = fileName;
+            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
 
 
             
@@ -507,6 +510,7 @@ namespace ShaderGraphImporter
             AssetDatabase.Refresh();
 
             ApplyDFG(shaderPath);
+            AssetDatabase.Refresh();
         }
 
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
@@ -515,8 +519,8 @@ namespace ShaderGraphImporter
 
             var texture = AssetDatabase.LoadAssetAtPath(DFGLutPath, typeof(Texture2D)) as Texture2D;
 
-            var importer = ShaderImporter.GetAtPath(shaderPath) as ShaderImporter;
-            importer.SetNonModifiableTextures(new[] { "_DFG" }, new[] { texture });
+            var importer = AssetImporter.GetAtPath(shaderPath) as ShaderImporter;
+            importer.SetNonModifiableTextures(new[] { "_DFG" }, new Texture[] { texture });
         }
     }
 }

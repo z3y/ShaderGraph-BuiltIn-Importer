@@ -10,6 +10,7 @@ namespace ShaderGraphImporter
         public string shaderCode;
         public bool alphaToCoverage = true;
         public bool grabPass = false;
+        public bool bicubicLightmap = true;
         public string shaderGraphProjectPath; // for handling custom .hlsl includes
         public string importPath;
         public string CustomEditor;

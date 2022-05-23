@@ -54,7 +54,7 @@ float bicubich1(float a)
 
 half4 SampleBicubic(Texture2D t, SamplerState s, float2 uv, float2 widthHeight, float2 texelSize)
 {
-    #if defined(SHADER_API_MOBILE) || defined(BICUBIC_LIGHTMAP_OFF)
+    #if defined(SHADER_API_MOBILE) || !defined(_BICUBICLIGHTMAP)
         return t.Sample(s, uv);
     #else
 

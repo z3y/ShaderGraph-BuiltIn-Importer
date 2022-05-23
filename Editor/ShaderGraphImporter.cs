@@ -49,6 +49,7 @@ namespace ShaderGraphImporter
             _settings.shadingModel = (ShadingModel)EditorGUILayout.EnumPopup("Shading Model", _settings.shadingModel);
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
             _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
+            _settings.bicubicLightmap = EditorGUILayout.ToggleLeft("Bicubic Lightmap", _settings.bicubicLightmap);
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
@@ -262,6 +263,10 @@ namespace ShaderGraphImporter
                             input[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
                             input[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
                         }
+                        if (importerSettings.bicubicLightmap)
+                        {
+                            input[index] += "\n[Toggle(_BICUBICLIGHTMAP)] _BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0";
+                        }
                         
                     }
                 }
@@ -353,6 +358,11 @@ namespace ShaderGraphImporter
                     {
                         input[index] += "\n#pragma shader_feature_local_fragment LTCGI";
                         input[index] += "\n#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF";
+                    }
+                    
+                    if (importerSettings.bicubicLightmap)
+                    {
+                        input[index] += "\n#pragma shader_feature_local_fragment _BICUBICLIGHTMAP";
                     }
                 }
 
@@ -460,7 +470,7 @@ namespace ShaderGraphImporter
 
         internal static void ImportShader(ref ImporterSettings importerSettings)
         {
-            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = DefaultImportPath;
+            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
             if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
 
 

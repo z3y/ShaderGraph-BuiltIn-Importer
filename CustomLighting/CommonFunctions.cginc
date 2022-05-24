@@ -267,6 +267,10 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
     #endif
 }
 
+#if IMPORTER_VERSION > 1
+uniform half _SpecularOcclusion;
+#endif
+
 half3 GetReflections(float3 normalWS, float3 positionWS, float3 viewDir, half3 f0, half roughness, half NoV, SurfaceDataCustom surf, half3 indirectDiffuse)
 {
     half3 indirectSpecular = 0;

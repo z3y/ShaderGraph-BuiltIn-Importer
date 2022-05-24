@@ -3,159 +3,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
-using UnityEditorInternal;
 using UnityEngine;
 
 namespace ShaderGraphImporter
 {
-    [CustomEditor(typeof(ImporterSettings))]
-    public class SettingsEditor : Editor
-    {
-        private ImporterSettings _settings;
-
-        private Vector2 _scrollPosition;
-        private ReorderableList _reorderableList;
-
-        private bool _firstTime = true;
-
-        SerializedProperty _elements;
-        public override void OnInspectorGUI()
-        {
-            _settings = (ImporterSettings)target;
-
-            if (_firstTime)
-            {
-                _elements = serializedObject.FindProperty("cgInclude");
-                _reorderableList = new ReorderableList(serializedObject, _elements)
-                {
-                    drawElementCallback = DrawListItems,
-                    drawHeaderCallback = DrawHeader
-                };
-                _firstTime = false;
-            }
-            EditorGUI.BeginChangeCheck();
-            Undo.RecordObject(_settings, "Shader Graph Importer Settings");
-
-            EditorGUILayout.Space();
-            if (GUILayout.Button("Paste & Import"))
-            {
-                _settings.shaderCode = GUIUtility.systemCopyBuffer;
-                Importer.ImportShader(ref _settings);
-            }
-
-            
-            EditorGUILayout.Space();
-
-            EditorGUILayout.LabelField("Features", EditorStyles.boldLabel);
-            GUILayout.BeginVertical("box");
-            _settings.shadingModel = (ShadingModel)EditorGUILayout.EnumPopup("Shading Model", _settings.shadingModel);
-            _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
-            _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
-            _settings.bicubicLightmap = EditorGUILayout.ToggleLeft("Bicubic Lightmap", _settings.bicubicLightmap);
-            _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
-            //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
-            _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
-            _settings.includeAudioLink = EditorGUILayout.ToggleLeft(new GUIContent("Include AudioLink", "Only includes AudioLink.cginc so it can be used with graph"), _settings.includeAudioLink);
-
-            GUILayout.EndVertical();
-
-            EditorGUILayout.Space();
-            GUILayout.BeginVertical("box");
-
-            _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
-            _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
-
-            _settings.fallback = EditorGUILayout.TextField("Fallback", _settings.fallback);
-
-            _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);
-
-            using (new GUILayout.HorizontalScope())
-            {
-                _settings.importPath = EditorGUILayout.TextField("File Path", _settings.importPath);
-                if (GUILayout.Button("Select"))
-                {
-                    _settings.importPath = EditorUtility.OpenFolderPanel("Shader Path", "", "");
-                    if (_settings.importPath.StartsWith(Application.dataPath))
-                    {
-                        _settings.importPath = "Assets" + _settings.importPath.Substring(Application.dataPath.Length);
-                    }
-                }
-            }
-
-
-            // using (new GUILayout.HorizontalScope())
-            // {
-            //     _settings.shaderGraphProjectPath = EditorGUILayout.TextField("ShaderGraph Project", _settings.shaderGraphProjectPath);
-            //     if (GUILayout.Button("Select"))
-            //     {
-            //         _settings.shaderGraphProjectPath = EditorUtility.OpenFolderPanel("ShaderGraph Project Assets Path", "", "");
-            //     }
-            // }
-
-
-
-            GUILayout.EndVertical();
-            _reorderableList.DoLayoutList();
-
-            EditorGUILayout.Space();
-
-
-            using (new GUILayout.HorizontalScope())
-            {
-                if (GUILayout.Button("Select"))
-                {
-                    var shaderObject = AssetDatabase.LoadAssetAtPath(_settings.importPath + _settings.fileName + ".shader", typeof(Shader));
-                    if (shaderObject is null) return;
-                    EditorGUIUtility.PingObject(shaderObject);
-                }
-                if (GUILayout.Button("Apply"))
-                {
-                    Importer.ImportShader(ref _settings);
-                }
-            }
-
-
-            EditorGUILayout.Space();
-            EditorGUILayout.LabelField("Debug", EditorStyles.boldLabel);
-            _settings.showCode = EditorGUILayout.ToggleLeft("Show Shader Code", _settings.showCode);
-            if (_settings.showCode)
-            {
-                _scrollPosition = EditorGUILayout.BeginScrollView(_scrollPosition, GUILayout.Height(500));
-                EditorGUILayout.TextArea(_settings.shaderCode, GUILayout.ExpandHeight(true));
-                EditorGUILayout.EndScrollView();
-            }
-
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                serializedObject.ApplyModifiedProperties();
-                EditorUtility.SetDirty(_settings);
-            }
-        }
-
-        void DrawListItems(Rect rect, int index, bool isActive, bool isFocused)
-        {
-            var element = _elements.GetArrayElementAtIndex(index);
-            EditorGUI.PropertyField(rect,element,GUIContent.none);
-        }
-
-        void DrawHeader(Rect rect)
-        {
-            EditorGUI.LabelField(rect, "HLSLINCLUDE");
-        }
-    }
-
     internal static class Importer
     {
+        public const int ImporterFeatureVersion = 2;
+        
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
-        //private const string DefaultImportPath = "Assets/ShaderGraph/";
-
-        private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
+        private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
 
-        public const int ImporterFeatureVersion = 1;
-
-        private static readonly string[] ReplaceLines =
+        private static readonly string[] WrongMulticompiles =
         {
             "#pragma multi_compile _ _SCREEN_SPACE_OCCLUSION",
             "#pragma multi_compile _ LIGHTMAP_ON",
@@ -171,118 +32,155 @@ namespace ShaderGraphImporter
             "#pragma multi_compile _ _CASTING_PUNCTUAL_LIGHT_SHADOW"
         };
 
-        private static readonly string[] ReplaceCoreRP =
+        private static readonly string[] CoreRPMatch =
         {
             "#include \"Packages/com.unity.render-pipelines.core/",
             "#include \"Packages/com.z3y.shadergraph-builtin/CoreRP/"
         };
 
-        private static readonly string[] ReplaceShaderGraphLibrary =
+        private static readonly string[] ShaderGraphLibraryMatch =
         {
             "#include \"Packages/com.unity.shadergraph/",
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
+        
+        internal static void ImportShader(ref ImporterSettings importerSettings)
+        {
+            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
+            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
+            
+            var fileLines = importerSettings.shaderCode.Split('\n');
 
-        private static void EditShaderFile(ref string[] input, ImporterSettings importerSettings)
+            // replace shader name
+            var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
+            shaderName = $"Shader Graphs/{shaderName}";
+            if (string.IsNullOrEmpty(importerSettings.shaderName)) importerSettings.shaderName = shaderName;
+            fileLines[0] = $"Shader \"{importerSettings.shaderName}\"";
+
+            
+            EditShaderFile(ref fileLines, importerSettings);
+
+            if (!Directory.Exists(importerSettings.importPath))
+            {
+                Directory.CreateDirectory(importerSettings.importPath);
+            }
+            
+            var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
+
+            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
+            
+            if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
+            
+            string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
+            File.WriteAllLines(shaderPath, fileLines);
+
+            AssetDatabase.Refresh();
+
+            ApplyDFG(shaderPath);
+            AssetDatabase.ImportAsset(shaderPath, ImportAssetOptions.ImportRecursive);
+        }
+
+        private static void EditShaderFile(ref string[] lines, ImporterSettings importerSettings)
         {
             
-
             bool parsingProperties = true;
             bool materialOverrideOn = false;
 
-            for (var index = 0; index < input.Length; index++)
+            for (var index = 0; index < lines.Length; index++)
             {
-                var trimmed = input[index].TrimStart();
+                var trimmed = lines[index].TrimStart();
 
 
                 // replace hlsl include paths
-                if (trimmed.StartsWith(ReplaceCoreRP[0], StringComparison.Ordinal))
+                if (trimmed.StartsWith(CoreRPMatch[0], StringComparison.Ordinal))
                 {
-                    input[index] = input[index].Replace(ReplaceCoreRP[0], ReplaceCoreRP[1]);
+                    lines[index] = lines[index].Replace(CoreRPMatch[0], CoreRPMatch[1]);
                 }
-                else if (trimmed.StartsWith(ReplaceShaderGraphLibrary[0], StringComparison.Ordinal))
+                else if (trimmed.StartsWith(ShaderGraphLibraryMatch[0], StringComparison.Ordinal))
                 {
-                    input[index] = input[index].Replace(ReplaceShaderGraphLibrary[0], ReplaceShaderGraphLibrary[1]);
+                    lines[index] = lines[index].Replace(ShaderGraphLibraryMatch[0], ShaderGraphLibraryMatch[1]);
                 }
 
-
+                #region EditProperties
                 if (parsingProperties)
                 {
                     // just adds attributes for the inspector, could be done differently
                     if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Surface", StringComparison.Ordinal))
                     {
                         materialOverrideOn = true;
-                        input[index] = "[Enum(ShaderGraphImporter.SurfaceType)]" + input[index];
+                        lines[index] = "[Enum(ShaderGraphImporter.SurfaceType)]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_Blend", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(ShaderGraphImporter.BlendingMode)]" + input[index];
+                        lines[index] = "[Enum(ShaderGraphImporter.BlendingMode)]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_AlphaClip", StringComparison.Ordinal))
                     {
-                        input[index] = "[ToggleUI]" + input[index];
+                        lines[index] = "[ToggleUI]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_SrcBlend", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
+                        lines[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_DstBlend", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + input[index];
+                        lines[index] = "[Enum(UnityEngine.Rendering.BlendMode)]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZWrite", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(Off, 0, On, 1)] " + input[index];
+                        lines[index] = "[Enum(Off, 0, On, 1)] " + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_ZTest", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(UnityEngine.Rendering.CompareFunction)]" + input[index];
+                        lines[index] = "[Enum(UnityEngine.Rendering.CompareFunction)]" + lines[index];
                     }
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_CullMode", StringComparison.Ordinal))
                     {
-                        input[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + input[index];
+                        lines[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + lines[index];
                     }
 
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                     {
-                        input[index] = input[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
-                        input[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                        lines[index] = lines[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
+                        lines[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
 
                         if (importerSettings.shadingModel == ShadingModel.FlatLit)
                         {
-                            input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0";
-                            input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0";
+                            lines[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0";
+                            lines[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0";
                         }
                         else
                         {
-                            input[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
-                            input[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
+                            lines[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
+                            lines[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
                         }
 
                         if (importerSettings.specularOcclusion)
                         {
-                            input[index] += "\n _SpecularOcclusion(\"Specular Occlusion\", Range(0,1)) = 0";
+                            lines[index] += "\n _SpecularOcclusion(\"Specular Occlusion\", Range(0,1)) = 0";
                         }
 
                         if (importerSettings.bakeryFeatures)
                         {
-                            input[index] += "\n[Toggle(BAKERY_SH)] _BakerySH (\"Bakery SH\", Int) = 0";
-                            input[index] += "\n[Toggle(LIGHTMAPPED_SPECULAR)] _LightmappedSpecular (\"Lightmapped Specular\", Int) = 0";
-                            input[index] += "\n[Toggle(BAKERY_PROBESHNONLINEAR)] _NonLinearLightProbeSH (\"Non-Linear LightProbe SH\", Int) = 0";
+                            lines[index] += "\n[Toggle(BAKERY_SH)] _BakerySH (\"Bakery SH\", Int) = 0";
+                            lines[index] += "\n[Toggle(LIGHTMAPPED_SPECULAR)] _LightmappedSpecular (\"Lightmapped Specular\", Int) = 0";
+                            lines[index] += "\n[Toggle(BAKERY_PROBESHNONLINEAR)] _NonLinearLightProbeSH (\"Non-Linear LightProbe SH\", Int) = 0";
                         }
                         if (importerSettings.ltcgi)
                         {
-                            input[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
-                            input[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
+                            lines[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
+                            lines[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
                         }
                         if (importerSettings.bicubicLightmap)
                         {
-                            input[index] += "\n[Toggle(_BICUBICLIGHTMAP)] _BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0";
+                            lines[index] += "\n[Toggle(_BICUBICLIGHTMAP)] _BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0";
                         }
                         
                     }
                 }
+                #endregion
+
 
                 // predefined keywords
                 if (trimmed.Equals("SubShader", StringComparison.Ordinal))
@@ -330,88 +228,88 @@ namespace ShaderGraphImporter
                     sb.AppendLine("ENDHLSL");
 
 
-                    input[index] = sb.ToString() + '\n' + input[index];
+                    lines[index] = sb.ToString() + '\n' + lines[index];
                 }
 
 
                 // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
-                    if (importerSettings.alphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) lines[index] += '\n' + "AlphaToMask [_AlphaToMask]";
 
                     
                 }
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
                     // forward add pass
-                    if (materialOverrideOn) input[index] = "Blend [_BUILTIN_SrcBlend] One";
-                    if (materialOverrideOn) input[index] += '\n' + "Cull [_BUILTIN_CullMode]";
-                    if (materialOverrideOn) input[index] += '\n' + "ZTest LEqual";
-                    input[index] += '\n' + "Fog { Color (0,0,0,0) }";
-                    if (importerSettings.alphaToCoverage && materialOverrideOn) input[index] += '\n' + "AlphaToMask [_AlphaToMask]";
+                    if (materialOverrideOn) lines[index] = "Blend [_BUILTIN_SrcBlend] One";
+                    if (materialOverrideOn) lines[index] += "\nCull [_BUILTIN_CullMode]";
+                    if (materialOverrideOn) lines[index] += "\nZTest LEqual";
+                    lines[index] += "\nFog { Color (0,0,0,0) }";
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) lines[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_shadowcaster", StringComparison.Ordinal))
                 {
                     // multicompile missing
-                    input[index] = input[index] + '\n' + "#pragma multi_compile_instancing";
+                    lines[index] += "\n#pragma multi_compile_instancing";
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
-                    input[index] += "\n#pragma multi_compile_fragment _ VERTEXLIGHT_ON";
+                    lines[index] += "\n#pragma multi_compile_fragment _ VERTEXLIGHT_ON";
                     
-                    input[index] += "\n#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF";
-                    input[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
+                    lines[index] += "\n#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF";
+                    lines[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
 
                     if (importerSettings.bakeryFeatures)
                     {
-                        input[index] += "\n#pragma shader_feature_local_fragment BAKERY_SH";
-                        input[index] += "\n#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR";
-                        input[index] += "\n#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR";
+                        lines[index] += "\n#pragma shader_feature_local_fragment BAKERY_SH";
+                        lines[index] += "\n#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR";
+                        lines[index] += "\n#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR";
                     }
                     if (importerSettings.ltcgi)
                     {
-                        input[index] += "\n#pragma shader_feature_local_fragment LTCGI";
-                        input[index] += "\n#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF";
+                        lines[index] += "\n#pragma shader_feature_local_fragment LTCGI";
+                        lines[index] += "\n#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF";
                     }
                     
                     if (importerSettings.bicubicLightmap)
                     {
-                        input[index] += "\n#pragma shader_feature_local_fragment _BICUBICLIGHTMAP";
+                        lines[index] += "\n#pragma shader_feature_local_fragment _BICUBICLIGHTMAP";
                     }
                     
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdadd_fullshadows", StringComparison.Ordinal))
                 {
-                    input[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
+                    lines[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
                 }
 
-                if (importerSettings.ltcgi && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))
+                if (importerSettings.ltcgi && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))
                 {
-                    input[index] =  LTCGIInclude + '\n' + input[index];
+                    lines[index] =  LTCGIInclude + '\n' + lines[index];
                 }
 
-                if (importerSettings.includeAudioLink && input[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shim/Shims.hlsl\"", StringComparison.Ordinal))
+                if (importerSettings.includeAudioLink && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shim/Shims.hlsl\"", StringComparison.Ordinal))
                 {
-                    input[index] = input[index] + '\n' + AudioLinkInclude;
+                    lines[index] = lines[index] + '\n' + AudioLinkInclude;
                 }
 
 
                 //remove unneeded passes
                 else if (trimmed.Equals("Name \"BuiltIn Deferred\"", StringComparison.Ordinal))
                 {
-                    index = RemovePass(input, index);
+                    index = RemovePass(ref lines, index);
                 }
                 else if (trimmed.Equals("Name \"DepthOnly\"", StringComparison.Ordinal))
                 {
-                    index = RemovePass(input, index);
+                    index = RemovePass(ref lines, index);
                 }
                 else if (trimmed.Equals("Name \"SceneSelectionPass\"", StringComparison.Ordinal))
                 {
-                    index = RemovePass(input, index);
+                    index = RemovePass(ref lines, index);
                 }
                 else if (trimmed.Equals("Name \"ScenePickingPass\"", StringComparison.Ordinal))
                 {
-                    index = RemovePass(input, index);
+                    index = RemovePass(ref lines, index);
                 }
 
                 
@@ -421,7 +319,7 @@ namespace ShaderGraphImporter
                 {
                     if (importerSettings.ltcgi)
                     {
-                        input[index] += "\n \"LTCGI\" = \"_LTCGI\"";
+                        lines[index] += "\n \"LTCGI\" = \"_LTCGI\"";
                     }
                 }
 
@@ -429,19 +327,20 @@ namespace ShaderGraphImporter
                 // additional properties
                 else if (trimmed.Equals("CBUFFER_START(UnityPerMaterial)", StringComparison.Ordinal))
                 {
-                    if (importerSettings.specularOcclusion)
-                    {
-                        input[index] += "\nhalf _SpecularOcclusion;";
-                    }
+                    lines[index] = string.Empty;
+                }
+                else if (trimmed.Equals("CBUFFER_END", StringComparison.Ordinal))
+                {
+                    lines[index] = string.Empty;
                 }
 
 
                 // remove unneeded multicompiles
-                foreach (var replaceLine in ReplaceLines)
+                foreach (var replaceLine in WrongMulticompiles)
                 {
                     if (trimmed.StartsWith(replaceLine, StringComparison.Ordinal))
                     {
-                        input[index] = string.Empty;
+                        lines[index] = string.Empty;
                     }
                 }
 
@@ -449,7 +348,7 @@ namespace ShaderGraphImporter
 
                 if (trimmed.StartsWith("CustomEditor \"UnityEditor.ShaderGraph.", StringComparison.Ordinal))
                 {
-                    input[index] = "";
+                    lines[index] = "";
                 }
                 // replace default shader graph editor with default editor, keeps the same if its custom
                 else if (trimmed.StartsWith("CustomEditorForRenderPipeline \"", StringComparison.Ordinal))
@@ -458,11 +357,11 @@ namespace ShaderGraphImporter
                     // if (customEditor.EndsWith("\"\"")) customEditor = customEditor.Remove(customEditor.Length - 4, 3); // remove double quotes at the end
 
                     //input[index] = "CustomEditor " + (customEditor.Contains("UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInLitGUI") ? importerSettings.shaderInspector : customEditor);
-                    input[index] = "CustomEditor \"" + importerSettings.CustomEditor + "\"";
+                    lines[index] = "CustomEditor \"" + importerSettings.CustomEditor + "\"";
                 }
                 else if (trimmed.StartsWith("FallBack \"Hidden", StringComparison.Ordinal))
                 {
-                    input[index] = "Fallback \"" + importerSettings.fallback + "\"";
+                    lines[index] = "Fallback \"" + importerSettings.fallback + "\"";
                 }
 
 
@@ -470,7 +369,7 @@ namespace ShaderGraphImporter
             }
         }
 
-        private static int RemovePass(string[] input, int index)
+        private static int RemovePass(ref string[] input, int index)
         {
             for (int i = index - 2; i < input.Length; i++)
             {
@@ -487,48 +386,7 @@ namespace ShaderGraphImporter
             return index;
         }
 
-        internal static void ImportShader(ref ImporterSettings importerSettings)
-        {
-            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
-            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
-
-
-            var fileLines = importerSettings.shaderCode.Split('\n');
-
-            var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
-
-            shaderName = $"Shader Graphs/{shaderName}";
-
-            if (string.IsNullOrEmpty(importerSettings.shaderName)) importerSettings.shaderName = shaderName;
-
-            fileLines[0] = $"Shader \"{importerSettings.shaderName}\"";
-
-            EditShaderFile(ref fileLines, importerSettings);
-
-            if (!Directory.Exists(importerSettings.importPath))
-            {
-                Directory.CreateDirectory(importerSettings.importPath);
-            }
-
-            //var fileName = importerSettings.shaderName.Replace('/', ' ');
-            var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
-
-            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
-
-
-            
-
-            if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
-
-
-            string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
-            File.WriteAllLines(shaderPath, fileLines);
-
-            AssetDatabase.Refresh();
-
-            ApplyDFG(shaderPath);
-            AssetDatabase.ImportAsset(shaderPath, ImportAssetOptions.ImportRecursive);
-        }
+        
 
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
         private static void ApplyDFG(string shaderPath)

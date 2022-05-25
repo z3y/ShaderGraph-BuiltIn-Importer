@@ -65,13 +65,12 @@ namespace ShaderGraphImporter
                 Directory.CreateDirectory(importerSettings.importPath);
             }
             
+            // shader file name and path
             var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
-
             if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
-            
             if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
-            
             string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
+            
             File.WriteAllLines(shaderPath, fileLines);
 
             AssetDatabase.Refresh();
@@ -101,7 +100,7 @@ namespace ShaderGraphImporter
                     lines[index] = lines[index].Replace(ShaderGraphLibraryMatch[0], ShaderGraphLibraryMatch[1]);
                 }
 
-                #region EditProperties
+
                 if (parsingProperties)
                 {
                     // just adds attributes for the inspector, could be done differently
@@ -142,59 +141,62 @@ namespace ShaderGraphImporter
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                     {
-                        lines[index] = lines[index] + "\n[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}";
-                        lines[index] += "\n[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask (\"Alpha To Coverage\", Int) = 0";
+                        var additionalProperties = new StringBuilder();
+                        
+                        additionalProperties.AppendLine("[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}");
+                        additionalProperties.AppendLine("[HideInInspector][Enum(Off, 0, On, 1)]_AlphaToMask (\"Alpha To Coverage\", Int) = 0");
 
                         if (importerSettings.shadingModel == ShadingModel.FlatLit)
                         {
-                            lines[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0";
-                            lines[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0";
+                            additionalProperties.AppendLine("[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0");
+                            additionalProperties.AppendLine("[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0");
                         }
                         else
                         {
-                            lines[index] += "\n[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1";
-                            lines[index] += "\n[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1";
+                            additionalProperties.AppendLine("[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 1");
+                            additionalProperties.AppendLine("[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 1");
                         }
 
                         if (importerSettings.specularOcclusion)
                         {
-                            lines[index] += "\n _SpecularOcclusion(\"Specular Occlusion\", Range(0,1)) = 0";
+                            additionalProperties.AppendLine("_SpecularOcclusion(\"Specular Occlusion\", Range(0,1)) = 0");
                         }
 
                         if (importerSettings.bakeryFeatures)
                         {
-                            lines[index] += "\n[Toggle(BAKERY_SH)] _BakerySH (\"Bakery SH\", Int) = 0";
-                            lines[index] += "\n[Toggle(LIGHTMAPPED_SPECULAR)] _LightmappedSpecular (\"Lightmapped Specular\", Int) = 0";
-                            lines[index] += "\n[Toggle(BAKERY_PROBESHNONLINEAR)] _NonLinearLightProbeSH (\"Non-Linear LightProbe SH\", Int) = 0";
+                            additionalProperties.AppendLine("[Toggle(BAKERY_SH)]_BakerySH(\"Bakery SH\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(LIGHTMAPPED_SPECULAR)]_LightmappedSpecular(\"Lightmapped Specular\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(BAKERY_PROBESHNONLINEAR)]_NonLinearLightProbeSH(\"Non-Linear LightProbe SH\", Int) = 0");
                         }
                         if (importerSettings.ltcgi)
                         {
-                            lines[index] += "\n[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0";
-                            lines[index] += "\n[Toggle(LTCGI_DIFFUSE_OFF)] _LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0";
+                            additionalProperties.AppendLine("[Toggle(LTCGI)] _LTCGI(\"LTCGI\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(LTCGI_DIFFUSE_OFF)]_LTCGI_DIFFUSE_OFF(\"LTCGI Disable Diffuse\", Int) = 0");
                         }
                         if (importerSettings.bicubicLightmap)
                         {
-                            lines[index] += "\n[Toggle(_BICUBICLIGHTMAP)] _BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0";
+                            additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0");
                         }
-                        
+
+                        lines[index] += Environment.NewLine + additionalProperties;
                     }
                 }
-                #endregion
-
 
                 // predefined keywords
                 if (trimmed.Equals("SubShader", StringComparison.Ordinal))
                 {
                     parsingProperties = false;
-                    var predefined = new List<string>();
-
-                    if (importerSettings.alphaToCoverage && materialOverrideOn) predefined.Add("#define PREDEFINED_A2C");
-                    if (importerSettings.specularOcclusion) predefined.Add("#define _SPECULAR_OCCLUSION");
-
 
                     var sb = new StringBuilder().AppendLine("HLSLINCLUDE");
 
                     sb.AppendLine("#define IMPORTER_VERSION " + ImporterFeatureVersion);
+                    
+                    if (importerSettings.alphaToCoverage && materialOverrideOn) sb.AppendLine("#define PREDEFINED_A2C");
+                    if (importerSettings.specularOcclusion) sb.AppendLine("#define _SPECULAR_OCCLUSION");
+                    
+                    sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
+                    sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
+                    sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
 
                     switch (importerSettings.shadingModel)
                     {
@@ -209,21 +211,12 @@ namespace ShaderGraphImporter
                             break;
                     }
 
-                    sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
-                    sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
-                    sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
-                    
-
                     if (importerSettings.cgInclude != null)
                     {
                         foreach (var t in importerSettings.cgInclude)
                         {
                             sb.AppendLine(t);
                         }
-                    }
-                    foreach (var t in predefined)
-                    {
-                        sb.AppendLine(t);
                     }
                     sb.AppendLine("ENDHLSL");
 
@@ -242,9 +235,13 @@ namespace ShaderGraphImporter
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
                     // forward add pass
-                    if (materialOverrideOn) lines[index] = "Blend [_BUILTIN_SrcBlend] One";
-                    if (materialOverrideOn) lines[index] += "\nCull [_BUILTIN_CullMode]";
-                    if (materialOverrideOn) lines[index] += "\nZTest LEqual";
+                    if (materialOverrideOn)
+                    {
+                        lines[index] = "Blend [_BUILTIN_SrcBlend] One";
+                        if (materialOverrideOn) lines[index] += "\nCull [_BUILTIN_CullMode]";
+                        if (materialOverrideOn) lines[index] += "\nZTest LEqual";
+                    }
+
                     lines[index] += "\nFog { Color (0,0,0,0) }";
                     if (importerSettings.alphaToCoverage && materialOverrideOn) lines[index] += '\n' + "AlphaToMask [_AlphaToMask]";
                 }
@@ -255,28 +252,32 @@ namespace ShaderGraphImporter
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
-                    lines[index] += "\n#pragma multi_compile_fragment _ VERTEXLIGHT_ON";
+                    var forwardBaseKeywords = new StringBuilder();
                     
-                    lines[index] += "\n#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF";
-                    lines[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
+                    forwardBaseKeywords.AppendLine("#pragma multi_compile_fragment _ VERTEXLIGHT_ON");
+                    
+                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF");
+                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF");
 
                     if (importerSettings.bakeryFeatures)
                     {
-                        lines[index] += "\n#pragma shader_feature_local_fragment BAKERY_SH";
-                        lines[index] += "\n#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR";
-                        lines[index] += "\n#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR";
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_SH");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR");
                     }
                     if (importerSettings.ltcgi)
                     {
-                        lines[index] += "\n#pragma shader_feature_local_fragment LTCGI";
-                        lines[index] += "\n#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF";
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LTCGI");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF");
                     }
                     
                     if (importerSettings.bicubicLightmap)
                     {
-                        lines[index] += "\n#pragma shader_feature_local_fragment _BICUBICLIGHTMAP";
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _BICUBICLIGHTMAP");
                     }
-                    
+
+                    lines[index] += Environment.NewLine + forwardBaseKeywords;
+
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdadd_fullshadows", StringComparison.Ordinal))
                 {
@@ -285,7 +286,7 @@ namespace ShaderGraphImporter
 
                 if (importerSettings.ltcgi && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))
                 {
-                    lines[index] =  LTCGIInclude + '\n' + lines[index];
+                    lines[index] = LTCGIInclude + '\n' + lines[index];
                 }
 
                 if (importerSettings.includeAudioLink && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shim/Shims.hlsl\"", StringComparison.Ordinal))
@@ -348,7 +349,7 @@ namespace ShaderGraphImporter
 
                 if (trimmed.StartsWith("CustomEditor \"UnityEditor.ShaderGraph.", StringComparison.Ordinal))
                 {
-                    lines[index] = "";
+                    lines[index] = string.Empty;
                 }
                 // replace default shader graph editor with default editor, keeps the same if its custom
                 else if (trimmed.StartsWith("CustomEditorForRenderPipeline \"", StringComparison.Ordinal))
@@ -387,7 +388,6 @@ namespace ShaderGraphImporter
         }
 
         
-
         const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
         private static void ApplyDFG(string shaderPath)
         {

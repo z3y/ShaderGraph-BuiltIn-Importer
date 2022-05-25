@@ -41,9 +41,9 @@ namespace ShaderGraphImporter
         private int _BUILTIN_CullMode;
         private int _AlphaToMask;
 
-        private static bool surfaceOptionsFoldout = true;
+        private static bool surfaceOptionsFoldout = false;
         private static bool surfaceInputsFoldout = true;
-        private static bool additionalSettingsFoldout = true;
+        private static bool additionalSettingsFoldout = false;
 
         private int additionalPropertiesStart = 0;
 
@@ -146,10 +146,12 @@ namespace ShaderGraphImporter
                     var content = new GUIContent(property.displayName);
                     if (property.type == MaterialProperty.PropType.Texture)
                     {
-                        float width = EditorGUIUtility.fieldWidth;
+                        float fieldWidth = EditorGUIUtility.fieldWidth;
+                        float labelWidth = EditorGUIUtility.labelWidth;
                         materialEditor.SetDefaultGUIWidths();
                         materialEditor.TextureProperty(property, content.text);
-                        EditorGUIUtility.fieldWidth = width;
+                        EditorGUIUtility.fieldWidth = fieldWidth;
+                        EditorGUIUtility.labelWidth = labelWidth;
                     }
                     else
                     {

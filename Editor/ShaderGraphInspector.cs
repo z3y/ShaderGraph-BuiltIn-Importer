@@ -153,6 +153,11 @@ namespace ShaderGraphImporter
                         EditorGUIUtility.fieldWidth = fieldWidth;
                         EditorGUIUtility.labelWidth = labelWidth;
                     }
+                    else if (property.type == MaterialProperty.PropType.Vector)
+                    {
+                        var vectorRect = EditorGUILayout.GetControlRect(true, MaterialEditor.GetDefaultPropertyHeight(property)/2, EditorStyles.layerMaskField);
+                        materialEditor.VectorProperty(vectorRect, property, property.displayName);
+                    }
                     else
                     {
                         materialEditor.ShaderProperty(property, content);

@@ -89,7 +89,7 @@ namespace ShaderGraphImporter
 
             if (_hasOverrideProperties)
             {
-                if (surfaceOptionsFoldout = DrawHeaderFoldout(new GUIContent("Surface Options"), surfaceOptionsFoldout))
+                if (surfaceOptionsFoldout = DrawHeaderFoldout(new GUIContent("Rendering Options"), surfaceOptionsFoldout))
                 {
                     EditorGUI.BeginChangeCheck();
 
@@ -126,7 +126,7 @@ namespace ShaderGraphImporter
                 }
             }
 
-            if (surfaceInputsFoldout = DrawHeaderFoldout(new GUIContent("Surface Inputs"), surfaceInputsFoldout))
+            if (surfaceInputsFoldout = DrawHeaderFoldout(new GUIContent("Properties"), surfaceInputsFoldout))
             {
                 EditorGUILayout.Space();
                 for (int i = 0; i < properties.Length; i++)

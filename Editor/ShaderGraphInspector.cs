@@ -103,11 +103,7 @@ namespace ShaderGraphImporter
                     }
                     materialEditor.ShaderProperty(properties[_BUILTIN_AlphaClip], new GUIContent("Alpha Clipping"));
 
-                    bool alphaToMaskEnabled = false;
-                    if (properties[_BUILTIN_AlphaClip].floatValue == 1 && _AlphaToMask >= 0)
-                    {
-                        alphaToMaskEnabled = true;
-                    }
+                    bool alphaToMaskEnabled = properties[_BUILTIN_AlphaClip].floatValue == 1 && _AlphaToMask >= 0;
 
                     if (EditorGUI.EndChangeCheck())
                     {
@@ -147,7 +143,18 @@ namespace ShaderGraphImporter
                         continue;
                     }
 
-                    materialEditor.ShaderProperty(property, new GUIContent(property.displayName));
+                    var content = new GUIContent(property.displayName);
+                    if (property.type == MaterialProperty.PropType.Texture)
+                    {
+                        float width = EditorGUIUtility.fieldWidth;
+                        materialEditor.SetDefaultGUIWidths();
+                        materialEditor.TextureProperty(property, content.text);
+                        EditorGUIUtility.fieldWidth = width;
+                    }
+                    else
+                    {
+                        materialEditor.ShaderProperty(property, content);
+                    }
                 }
             }
 

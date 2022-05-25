@@ -12,6 +12,7 @@ namespace ShaderGraphImporter
         public const int ImporterFeatureVersion = 2;
         
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
+        private const string ThryEditorName = "Thry.ShaderEditor";
         
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
@@ -47,7 +48,7 @@ namespace ShaderGraphImporter
         internal static void ImportShader(ref ImporterSettings importerSettings)
         {
             if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
-            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
+            if (string.IsNullOrEmpty(importerSettings.customEditorName)) importerSettings.customEditorName = DefaultShaderEditor;
             
             var fileLines = importerSettings.shaderCode.Split('\n');
 
@@ -357,8 +358,19 @@ namespace ShaderGraphImporter
                     // string customEditor = trimmed.Remove(0, ("CustomEditorForRenderPipeline ").Length);
                     // if (customEditor.EndsWith("\"\"")) customEditor = customEditor.Remove(customEditor.Length - 4, 3); // remove double quotes at the end
 
-                    //input[index] = "CustomEditor " + (customEditor.Contains("UnityEditor.Rendering.BuiltIn.ShaderGraph.BuiltInLitGUI") ? importerSettings.shaderInspector : customEditor);
-                    lines[index] = "CustomEditor \"" + importerSettings.CustomEditor + "\"";
+                    switch (importerSettings.customShaderEditor)
+                    {
+                        default:
+                        case CustomShaderEditor.Default:
+                            lines[index] = "CustomEditor \"" + DefaultShaderEditor + "\"";
+                            break;
+                        case CustomShaderEditor.Thry:
+                            lines[index] = "CustomEditor \"" + ThryEditorName + "\"";
+                            break;
+                        case CustomShaderEditor.Custom:
+                            lines[index] = "CustomEditor \"" + importerSettings.customEditorName + "\"";
+                            break;
+                    }
                 }
                 else if (trimmed.StartsWith("FallBack \"Hidden", StringComparison.Ordinal))
                 {

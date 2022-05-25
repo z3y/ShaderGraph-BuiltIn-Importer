@@ -12,8 +12,7 @@ namespace ShaderGraphImporter
         public bool bicubicLightmap = true;
         public string shaderGraphProjectPath; // for handling custom .hlsl includes
         public string importPath;
-        public CustomShaderEditor customShaderEditor;
-        public string customEditorName;
+        public string CustomEditor;
         public bool showCode = false; // prevent inspector lag
         public bool bakeryFeatures = true;
         public bool specularOcclusion = false;
@@ -26,17 +25,6 @@ namespace ShaderGraphImporter
         public ShadingModel shadingModel = ShadingModel.Lit;
     }
 
-    public enum ShadingModel
-    {
-        Lit,
-        FlatLit
-    };
-
-    public enum CustomShaderEditor
-    {
-        Default,
-        Thry,
-        Custom
-    };
+    public enum ShadingModel { Lit, FlatLit };
 
 }

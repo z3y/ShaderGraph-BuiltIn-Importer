@@ -58,12 +58,8 @@ namespace ShaderGraphImporter
             GUILayout.BeginVertical("box");
 
             _settings.shaderName = EditorGUILayout.TextField("Shader Name", _settings.shaderName);
-            
-            _settings.customShaderEditor = (CustomShaderEditor)EditorGUILayout.EnumPopup("Editor", _settings.customShaderEditor);
-            if (_settings.customShaderEditor == CustomShaderEditor.Custom)
-                _settings.customEditorName = EditorGUILayout.TextField("Custom Editor", _settings.customEditorName);
+            _settings.CustomEditor = EditorGUILayout.TextField("Custom Editor", _settings.CustomEditor);
 
-            
             _settings.fallback = EditorGUILayout.TextField("Fallback", _settings.fallback);
 
             _settings.fileName = EditorGUILayout.TextField("File Name", _settings.fileName);

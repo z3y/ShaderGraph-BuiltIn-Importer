@@ -215,7 +215,7 @@ half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughne
 
 void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float3 viewDir, half NoV, half clampedRoughness, half perceptualRoughness, half3 f0, v2f_surf input)
 {
-    #ifdef USING_LIGHT_MULTI_COMPILE
+    #if defined(USING_LIGHT_MULTI_COMPILE) || defined(SHADINGMODEL_FLATLIT)
         lightData.Direction = normalize(UnityWorldSpaceLightDir(input.worldPos));
         lightData.HalfVector = Unity_SafeNormalize(lightData.Direction + viewDir);
         lightData.NoL = saturate(dot(normalWS, lightData.Direction));
@@ -255,6 +255,13 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             half3 properLightColor = magic + normalLight;
             half properLuminance = calculateluminance(magic + normalLight);
             lightData.FinalColor = properLightColor * max(0.0001, (target / properLuminance));
+
+            #ifdef UNITY_PASS_FORWARDBASE
+            if (!any(_LightColor0.rgb))
+            {
+                lightData.Attenuation = 1.;
+            }
+            #endif
 
             lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
         #endif

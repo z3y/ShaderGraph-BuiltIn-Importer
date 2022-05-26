@@ -239,7 +239,7 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
         lightData.Specular = 0.0;
         #endif
 
-        #ifdef SHADINGMODEL_FLATLIT
+        #if defined(SHADINGMODEL_FLATLIT) && defined(UNITY_PASS_FORWARDBASE)
             // based on poiyomi flat lit because im bad at toon
             half3 magic = max(BetterSH9(normalize(unity_SHAr + unity_SHAg + unity_SHAb)), 0);
             half3 normalLight = _LightColor0.rgb + BetterSH9(float4(0, 0, 0, 1));
@@ -265,6 +265,7 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
 
             lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
         #endif
+
 
         #if defined(LIGHTMAP_SHADOW_MIXING) && defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) && defined(LIGHTMAP_ON)
             lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);

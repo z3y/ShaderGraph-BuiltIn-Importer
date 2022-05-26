@@ -220,8 +220,8 @@ namespace ShaderGraphImporter
                         case ShadingModel.FlatLit:
                             sb.AppendLine("#define SHADINGMODEL_FLATLIT");
                             sb.AppendLine("#pragma skip_variants SHADOWS_SCREEN");
-                            sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");
-                            sb.AppendLine("#pragma skip_variants SHADOWS_CUBE");
+                            // sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");
+                            // sb.AppendLine("#pragma skip_variants SHADOWS_CUBE");
                             break;
                     }
 

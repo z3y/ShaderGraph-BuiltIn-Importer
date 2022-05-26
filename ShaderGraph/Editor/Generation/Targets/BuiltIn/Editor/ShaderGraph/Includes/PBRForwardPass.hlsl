@@ -2,6 +2,7 @@
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/LegacyBuilding.hlsl"
 #include "Packages/com.z3y.shadergraph-builtin/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/BuildInputData.hlsl"
 
+
 v2f_surf PBRStandardVertex(appdata_full v)
 {
     UNITY_SETUP_INSTANCE_ID(v);
@@ -9,6 +10,13 @@ v2f_surf PBRStandardVertex(appdata_full v)
     UNITY_INITIALIZE_OUTPUT(v2f_surf,o);
     UNITY_TRANSFER_INSTANCE_ID(v,o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
+    #ifdef RALIV_PENETRATOR
+        PenetratorReshape(v.vertex, v.normal);
+    #endif
+    #ifdef RALIV_ORIFICE
+  		OrificeReshape(v.vertex, v.normal, v.tangent, v.vertexId);
+    #endif
 
     o.pos = UnityObjectToClipPos(v.vertex);
     float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;

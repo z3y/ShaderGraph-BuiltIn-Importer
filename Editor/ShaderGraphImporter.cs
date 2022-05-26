@@ -178,6 +178,14 @@ namespace ShaderGraphImporter
                             additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0");
                         }
 
+                        if (importerSettings.dps)
+                        {
+                            additionalProperties.AppendLine("[Toggle(RALIV_PENETRATOR)] _RALIV_PENETRATOR(\"Penetrator\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(RALIV_ORIFICE)] _RALIV_ORIFICE(\"Oriface\", Int) = 0");
+                            var dpsProperties = File.ReadAllText("Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Properties.cginc");
+                            additionalProperties.AppendLine(dpsProperties);
+                        }
+
                         lines[index] += Environment.NewLine + additionalProperties;
                     }
                 }
@@ -197,6 +205,12 @@ namespace ShaderGraphImporter
                     sb.AppendLine("#pragma skip_variants UNITY_HDR_ON");
                     sb.AppendLine("#pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A");
                     sb.AppendLine("#pragma skip_variants LIGHTPROBE_SH");
+
+                    if (importerSettings.dps)
+                    {
+                        sb.AppendLine("#pragma shader_feature_local_vertex RALIV_PENETRATOR");
+                        sb.AppendLine("#pragma shader_feature_local_vertex RALIV_ORIFICE");
+                    }
 
                     switch (importerSettings.shadingModel)
                     {

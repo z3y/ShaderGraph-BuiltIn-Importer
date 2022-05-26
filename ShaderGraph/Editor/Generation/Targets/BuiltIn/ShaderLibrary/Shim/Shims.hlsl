@@ -31,6 +31,28 @@
 #include "AutoLight.cginc"
 
 
+struct  appdata_full_custom {
+    float4 vertex : POSITION;
+    float4 tangent : TANGENT;
+    float3 normal : NORMAL;
+    float4 texcoord : TEXCOORD0;
+    float4 texcoord1 : TEXCOORD1;
+    float4 texcoord2 : TEXCOORD2;
+    float4 texcoord3 : TEXCOORD3;
+    fixed4 color : COLOR;
+    UNITY_VERTEX_INPUT_INSTANCE_ID
+    uint vertexId : SV_VertexID;
+};
+
+// need vertexId for dps
+#define appdata_full appdata_full_custom
+
+#if defined(RALIV_PENETRATOR) || defined(RALIV_ORIFICE)
+  #include "Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Defines.cginc"
+  #include "Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Functions.cginc"
+#endif
+
+
 
 struct LightDataCustom
 {

@@ -17,6 +17,7 @@ namespace ShaderGraphImporter
         public bool bakeryFeatures = true;
         public bool specularOcclusion = false;
         public bool ltcgi = false;
+        public bool dps = false;
         public bool stencil = false;
         public bool includeAudioLink = false;
         public string fileName;

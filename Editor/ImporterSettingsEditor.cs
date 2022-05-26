@@ -1,4 +1,5 @@
-﻿using UnityEditor;
+﻿using System.IO;
+using UnityEditor;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -50,7 +51,18 @@ namespace ShaderGraphImporter
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            EditorGUI.BeginChangeCheck();
             _settings.dps = EditorGUILayout.ToggleLeft(new GUIContent("DPS", "Raliv Dynamic Penetration System"), _settings.dps);
+            if (EditorGUI.EndChangeCheck())
+            {
+
+                bool dpsIncluded = Directory.Exists("Assets/RalivDynamicPenetrationSystem");
+                if (!dpsIncluded)
+                {
+                    _settings.dps = false;
+                    Debug.LogError("RalivDynamicPenetrationSystem not found");
+                }
+            }
             _settings.includeAudioLink = EditorGUILayout.ToggleLeft(new GUIContent("Include AudioLink", "Only includes AudioLink.cginc so it can be used with graph"), _settings.includeAudioLink);
 
             GUILayout.EndVertical();

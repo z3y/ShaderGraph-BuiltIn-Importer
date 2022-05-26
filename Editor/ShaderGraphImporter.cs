@@ -180,7 +180,7 @@ namespace ShaderGraphImporter
 
                         if (importerSettings.dps)
                         {
-                            additionalProperties.AppendLine("[Toggle(RALIV_PENETRATOR)] _RALIV_PENETRATOR(\"Penetrator\", Int) = 0");
+                            additionalProperties.AppendLine("[Header(DPS Settings)][Space(10)][Toggle(RALIV_PENETRATOR)] _RALIV_PENETRATOR(\"Penetrator\", Int) = 0");
                             additionalProperties.AppendLine("[Toggle(RALIV_ORIFICE)] _RALIV_ORIFICE(\"Oriface\", Int) = 0");
                             var dpsProperties = File.ReadAllText("Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Properties.cginc");
                             additionalProperties.AppendLine(dpsProperties);

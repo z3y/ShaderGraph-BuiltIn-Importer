@@ -52,6 +52,8 @@ struct  appdata_full_custom {
   #include "Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Functions.cginc"
 #endif
 
+static float static_Reflectance = 0.5;
+
 
 
 struct LightDataCustom

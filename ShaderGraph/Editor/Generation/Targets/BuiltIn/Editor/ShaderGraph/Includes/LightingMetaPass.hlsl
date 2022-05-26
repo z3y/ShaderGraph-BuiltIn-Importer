@@ -148,9 +148,9 @@ PackedVaryings vert(Attributes input)
 {
     Varyings output;
     ZERO_INITIALIZE(Varyings, output);
-    #if UNITY_ANY_INSTANCING_ENABLED
-    vertexSurf.instanceID = varyings.instanceID;
-    #endif
+    //#if UNITY_ANY_INSTANCING_ENABLED
+    //vertexSurf.instanceID = varyings.instanceID;
+    //#endif
     output = BuildVaryings(input);
 
     VertexDescriptionInputs vertexDescriptionInputs = BuildVertexDescriptionInputs(input);

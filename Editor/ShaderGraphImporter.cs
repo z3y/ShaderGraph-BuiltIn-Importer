@@ -219,6 +219,9 @@ namespace ShaderGraphImporter
                         sb.AppendLine("#pragma shader_feature_local_vertex RALIV_PENETRATOR");
                         sb.AppendLine("#pragma shader_feature_local_vertex RALIV_ORIFICE");
                     }
+                    
+                    if (importerSettings.lodFadeCrossfade) sb.AppendLine("#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE");
+                    
 
                     switch (importerSettings.shadingModel)
                     {
@@ -280,9 +283,11 @@ namespace ShaderGraphImporter
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
                     var forwardBaseKeywords = new StringBuilder();
-                    
-                    forwardBaseKeywords.AppendLine("#pragma multi_compile_fragment _ VERTEXLIGHT_ON");
-                    
+
+                    forwardBaseKeywords.AppendLine(importerSettings.allowVertexLights
+                        ? "#pragma multi_compile_fragment _ VERTEXLIGHT_ON"
+                        : "#pragma skip_variants VERTEXLIGHT_ON");
+
                     forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF");
                     forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF");
 

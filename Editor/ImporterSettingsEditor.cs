@@ -48,6 +48,8 @@ namespace ShaderGraphImporter
             _settings.alphaToCoverage = EditorGUILayout.ToggleLeft("Alpha To Coverage", _settings.alphaToCoverage);
             _settings.bakeryFeatures = EditorGUILayout.ToggleLeft("Bakery Features", _settings.bakeryFeatures);
             _settings.bicubicLightmap = EditorGUILayout.ToggleLeft("Bicubic Lightmap", _settings.bicubicLightmap);
+            _settings.allowVertexLights = EditorGUILayout.ToggleLeft("Allow Vertex Lights", _settings.allowVertexLights);
+            _settings.lodFadeCrossfade = EditorGUILayout.ToggleLeft("Lod Fade Crossfade", _settings.lodFadeCrossfade);
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);

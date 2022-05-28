@@ -51,6 +51,9 @@ namespace ShaderGraphImporter
             _settings.specularOcclusion = EditorGUILayout.ToggleLeft("Specular Occlusion", _settings.specularOcclusion);
             //_settings.stencil = EditorGUILayout.ToggleLeft("Stencil", _settings.stencil);
             _settings.ltcgi = EditorGUILayout.ToggleLeft("LTCGI", _settings.ltcgi);
+            _settings.grabPass = EditorGUILayout.ToggleLeft("GrabPass", _settings.grabPass);
+            if (_settings.grabPass) _settings.grabPassName = EditorGUILayout.TextField("GrabPass Name", _settings.grabPassName);
+            
             EditorGUI.BeginChangeCheck();
             _settings.dps = EditorGUILayout.ToggleLeft(new GUIContent("DPS", "Raliv Dynamic Penetration System"), _settings.dps);
             if (EditorGUI.EndChangeCheck())

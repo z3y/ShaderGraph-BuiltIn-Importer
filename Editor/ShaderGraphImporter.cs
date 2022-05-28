@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using UnityEditor;
@@ -137,6 +136,15 @@ namespace ShaderGraphImporter
                     {
                         lines[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + lines[index];
                     }
+                    
+                    
+                    else if (trimmed.StartsWith("[NoScaleOffset]" + importerSettings.grabPassName + "(", StringComparison.Ordinal)
+                             || trimmed.StartsWith(importerSettings.grabPassName + "(", StringComparison.Ordinal))
+                    {
+                        var property = trimmed.Split('=');
+
+                        lines[index] = property[0] + "= \"\" {}";
+                    }
 
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
@@ -236,6 +244,11 @@ namespace ShaderGraphImporter
 
 
                     lines[index] = sb.ToString() + '\n' + lines[index];
+
+                    if (importerSettings.grabPass)
+                    {
+                        lines[index+1] += Environment.NewLine + "GrabPass { \"" + importerSettings.grabPassName + "\" }";
+                    }
                 }
 
 

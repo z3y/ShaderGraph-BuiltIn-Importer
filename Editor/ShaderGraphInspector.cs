@@ -89,7 +89,7 @@ namespace ShaderGraphImporter
 
             if (_hasOverrideProperties)
             {
-                if (surfaceOptionsFoldout = DrawHeaderFoldout(new GUIContent("Surface Options"), surfaceOptionsFoldout))
+                if (surfaceOptionsFoldout = DrawHeaderFoldout(new GUIContent("Rendering Options"), surfaceOptionsFoldout))
                 {
                     EditorGUI.BeginChangeCheck();
 
@@ -126,7 +126,7 @@ namespace ShaderGraphImporter
                 }
             }
 
-            if (surfaceInputsFoldout = DrawHeaderFoldout(new GUIContent("Surface Inputs"), surfaceInputsFoldout))
+            if (surfaceInputsFoldout = DrawHeaderFoldout(new GUIContent("Properties"), surfaceInputsFoldout))
             {
                 EditorGUILayout.Space();
                 for (int i = 0; i < properties.Length; i++)
@@ -152,6 +152,11 @@ namespace ShaderGraphImporter
                         materialEditor.TextureProperty(property, content.text);
                         EditorGUIUtility.fieldWidth = fieldWidth;
                         EditorGUIUtility.labelWidth = labelWidth;
+                    }
+                    else if (property.type == MaterialProperty.PropType.Vector)
+                    {
+                        var vectorRect = EditorGUILayout.GetControlRect(true, MaterialEditor.GetDefaultPropertyHeight(property)/2, EditorStyles.layerMaskField);
+                        materialEditor.VectorProperty(vectorRect, property, property.displayName);
                     }
                     else
                     {

@@ -10,6 +10,13 @@ v2f_surf PBRForwardAddVertex(appdata_full v)
     UNITY_TRANSFER_INSTANCE_ID(v,o);
     UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
+    #ifdef RALIV_PENETRATOR
+        PenetratorReshape(v.vertex, v.normal);
+    #endif
+    #ifdef RALIV_ORIFICE
+  		OrificeReshape(v.vertex, v.normal, v.tangent, v.vertexId);
+    #endif
+
     o.pos = UnityObjectToClipPos(v.vertex);
     float3 worldPos = mul(unity_ObjectToWorld, v.vertex).xyz;
     float3 worldNormal = UnityObjectToWorldNormal(v.normal);

@@ -24,6 +24,7 @@ void InitializeDefaultSurfaceData(inout SurfaceDataCustom surf)
     surf.alphaClipThreshold = 0.5;
 }
 
+
 void CopyStandardToCustomSurfaceData(inout SurfaceDataCustom surf, SurfaceOutputStandard standardSurf)
 {
     surf.albedo = standardSurf.Albedo;
@@ -32,6 +33,6 @@ void CopyStandardToCustomSurfaceData(inout SurfaceDataCustom surf, SurfaceOutput
     surf.metallic = standardSurf.Metallic;
     surf.perceptualRoughness = 1.0f - standardSurf.Smoothness;
     surf.occlusion = standardSurf.Occlusion;
-    surf.reflectance = 0.5;
+    surf.reflectance = static_Reflectance;
     surf.alpha = standardSurf.Alpha;
 }

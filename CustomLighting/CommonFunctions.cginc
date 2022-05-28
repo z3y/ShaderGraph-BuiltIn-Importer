@@ -215,7 +215,7 @@ half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughne
 
 void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float3 viewDir, half NoV, half clampedRoughness, half perceptualRoughness, half3 f0, v2f_surf input)
 {
-    #ifdef USING_LIGHT_MULTI_COMPILE
+    #if defined(USING_LIGHT_MULTI_COMPILE) || defined(SHADINGMODEL_FLATLIT)
         lightData.Direction = normalize(UnityWorldSpaceLightDir(input.worldPos));
         lightData.HalfVector = Unity_SafeNormalize(lightData.Direction + viewDir);
         lightData.NoL = saturate(dot(normalWS, lightData.Direction));
@@ -239,7 +239,7 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
         lightData.Specular = 0.0;
         #endif
 
-        #ifdef SHADINGMODEL_FLATLIT
+        #if defined(SHADINGMODEL_FLATLIT) && defined(UNITY_PASS_FORWARDBASE)
             // based on poiyomi flat lit because im bad at toon
             half3 magic = max(BetterSH9(normalize(unity_SHAr + unity_SHAg + unity_SHAb)), 0);
             half3 normalLight = _LightColor0.rgb + BetterSH9(float4(0, 0, 0, 1));
@@ -256,8 +256,16 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             half properLuminance = calculateluminance(magic + normalLight);
             lightData.FinalColor = properLightColor * max(0.0001, (target / properLuminance));
 
+            #ifdef UNITY_PASS_FORWARDBASE
+            if (!any(_LightColor0.rgb))
+            {
+                lightData.Attenuation = 1.;
+            }
+            #endif
+
             lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
         #endif
+
 
         #if defined(LIGHTMAP_SHADOW_MIXING) && defined(SHADOWS_SHADOWMASK) && defined(SHADOWS_SCREEN) && defined(LIGHTMAP_ON)
             lightData.FinalColor *= UnityComputeForwardShadows(input.lmap.xy, input.worldPos, input._ShadowCoord);

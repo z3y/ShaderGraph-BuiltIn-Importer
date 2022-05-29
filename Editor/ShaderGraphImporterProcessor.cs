@@ -14,19 +14,14 @@ namespace ShaderGraphImporter
             {
                 if (!importedAssets[i].EndsWith(ShaderGraphScriptedImporter.EXT, StringComparison.Ordinal)) continue;
 
-                try
-                {
-                    var shaderObj = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(Shader));
 
-                    if (shaderObj is Shader shader)
-                    {
-                        ShaderUtil.RegisterShader(shader);
-                    }
-                }
-                catch
+                var shaderObj = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(Shader));
+
+                if (shaderObj is Shader shader)
                 {
-                    // unused
+                    ShaderUtil.RegisterShader(shader);
                 }
+
                 
             }
         }

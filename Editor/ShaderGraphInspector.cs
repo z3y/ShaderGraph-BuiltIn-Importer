@@ -23,9 +23,7 @@ namespace ShaderGraphImporter
 
     public class DefaultInspector : ShaderGUI
     {
-
         
-
         private bool _hasOverrideProperties = false;
 
         private bool _firstTime = true;

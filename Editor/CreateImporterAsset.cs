@@ -2,12 +2,12 @@
 using UnityEditor;
 using UnityEngine;
 
-namespace SGImporter
+namespace ShaderGraphImporter
 {
-    public static class CreateNewAsset
+    public static class CreateImporterAsset
     {
         [MenuItem("Assets/Create/Shader/Shader Graph Importer")]
-        public static void CreateAsset()
+        public static void Create()
         {
             var folder = Selection.activeObject;
             if (folder is null) return;
@@ -18,7 +18,7 @@ namespace SGImporter
                 path = "Assets";
             }
 
-            path += "/new Shader." + SGScriptedImporter.EXT;
+            path += "/new Shader." + ShaderGraphScriptedImporter.EXT;
 
             var cleanPath = AssetDatabase.GenerateUniqueAssetPath(path) ;
             //File.WriteAllText(cleanPath, EmptyShader);
@@ -67,7 +67,6 @@ namespace SGImporter
             ENDCG
         }
     }
-}
-";
+}";
     }
 }

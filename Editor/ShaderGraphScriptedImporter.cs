@@ -4,8 +4,79 @@ using System.Text;
 using UnityEditor;
 using UnityEngine;
 
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
+
+
 namespace ShaderGraphImporter
 {
+    
+    [ScriptedImporter(1, EXT)]
+    public class ShaderGraphScriptedImporter : ScriptedImporter
+    {
+        #region ExposedProperties
+        public bool alphaToCoverage = true;
+        public bool grabPass = false;
+        public string grabPassName = "_GrabTexture";
+        public bool allowVertexLights = true;
+        public bool lodFadeCrossfade = false;
+        public bool bicubicLightmap = true;
+        public bool bakeryFeatures = true;
+        public bool specularOcclusion = false;
+        public bool ltcgi = false;
+        public bool dps = false;
+        public bool stencil = false;
+        public bool includeAudioLink = false;
+        public string CustomEditor;
+        public string fallback;
+        public string[] cgInclude;
+        public ShadingModel shadingModel = ShadingModel.Lit;
+        #endregion
+
+        public enum ShadingModel { Lit, FlatLit };
+        internal const string EXT = "shadergraphimporter";
+
+
+        public override void OnImportAsset(AssetImportContext ctx)
+        {
+            
+            var source = Importer.ProcessShader(this, ctx.assetPath);
+            
+            var shader = ShaderUtil.CreateShaderAsset(ctx, source, false);
+
+            try
+            {
+                EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { SGScriptedImporterData.dfgLut });
+            }
+            catch
+            {
+                // ignored
+            }
+            
+            ctx.AddObjectToAsset("Shader", shader);
+            ctx.SetMainObject(shader);
+
+
+            /*var defaultMaterial = new Material(shader)
+            {
+                name = shader.name
+            };
+            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);*/
+            
+            
+            AssetDatabase.ImportAsset(assetPath);
+        }
+
+    }
+
+    static class SGScriptedImporterData
+    {
+        internal static readonly Texture2D dfgLut = AssetDatabase.LoadAssetAtPath("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr", typeof(Texture2D)) as Texture2D;
+    }
+
     internal static class Importer
     {
         public const int ImporterFeatureVersion = 2;
@@ -43,42 +114,25 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
         
-        internal static void ImportShader(ref ImporterSettings importerSettings)
+        internal static string ProcessShader(ShaderGraphScriptedImporter importerSettings, string sourcePath)
         {
-            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
             if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
-            
-            var fileLines = importerSettings.shaderCode.Split('\n');
+
+            var fileLines = File.ReadAllLines(sourcePath);
 
             // replace shader name
             var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
             shaderName = $"Shader Graphs/{shaderName}";
-            if (string.IsNullOrEmpty(importerSettings.shaderName)) importerSettings.shaderName = shaderName;
-            fileLines[0] = $"Shader \"{importerSettings.shaderName}\"";
+            fileLines[0] = $"Shader \"{shaderName}\"";
 
             
             EditShaderFile(ref fileLines, importerSettings);
 
-            if (!Directory.Exists(importerSettings.importPath))
-            {
-                Directory.CreateDirectory(importerSettings.importPath);
-            }
-            
-            // shader file name and path
-            var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
-            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
-            if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
-            string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
-            
-            File.WriteAllLines(shaderPath, fileLines);
 
-            AssetDatabase.Refresh();
-
-            ApplyDFG(shaderPath);
-            AssetDatabase.ImportAsset(shaderPath, ImportAssetOptions.ImportRecursive);
+            return string.Join("\n", fileLines);
         }
 
-        private static void EditShaderFile(ref string[] lines, ImporterSettings importerSettings)
+        private static void EditShaderFile(ref string[] lines, ShaderGraphScriptedImporter importerSettings)
         {
             
             bool parsingProperties = true;
@@ -154,7 +208,7 @@ namespace ShaderGraphImporter
                         additionalProperties.AppendLine("[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}");
                         additionalProperties.AppendLine("[HideInInspector][Enum(Off, 0, On, 1)]_AlphaToMask (\"Alpha To Coverage\", Int) = 0");
 
-                        if (importerSettings.shadingModel == ShadingModel.FlatLit)
+                        if (importerSettings.shadingModel == ShaderGraphScriptedImporter.ShadingModel.FlatLit)
                         {
                             additionalProperties.AppendLine("[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0");
                             additionalProperties.AppendLine("[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0");
@@ -225,10 +279,10 @@ namespace ShaderGraphImporter
 
                     switch (importerSettings.shadingModel)
                     {
-                        case ShadingModel.Lit:
+                        case ShaderGraphScriptedImporter.ShadingModel.Lit:
                             sb.AppendLine("#define SHADINGMODEL_LIT");
                             break;
-                        case ShadingModel.FlatLit:
+                        case ShaderGraphScriptedImporter.ShadingModel.FlatLit:
                             sb.AppendLine("#define SHADINGMODEL_FLATLIT");
                             sb.AppendLine("#pragma skip_variants SHADOWS_SCREEN");
                             // sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");
@@ -417,14 +471,6 @@ namespace ShaderGraphImporter
             }
 
             return index;
-        }
-
-        
-        private static readonly Texture2D dfgLut = AssetDatabase.LoadAssetAtPath("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr", typeof(Texture2D)) as Texture2D;
-        private static void ApplyDFG(string shaderPath)
-        {
-            var importer = AssetImporter.GetAtPath(shaderPath) as ShaderImporter;
-            importer.SetNonModifiableTextures(new[] { "_DFG" }, new Texture[] { dfgLut });
         }
     }
 }

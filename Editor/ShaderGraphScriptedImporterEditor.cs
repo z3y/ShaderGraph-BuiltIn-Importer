@@ -11,11 +11,11 @@ using UnityEditor.AssetImporters;
 using UnityEditor.Experimental.AssetImporters;
 #endif
 
-namespace SGImporter
+namespace ShaderGraphImporter
 {
         
-    [CustomEditor(typeof(SGScriptedImporter))]
-    public class SGScriptedImporterEditor: ScriptedImporterEditor
+    [CustomEditor(typeof(ShaderGraphScriptedImporter))]
+    public class ShaderGraphScriptedImporterEditor: ScriptedImporterEditor
     {
         
         #pragma warning disable CS0649
@@ -44,7 +44,7 @@ namespace SGImporter
         {
             base.OnEnable();
             
-            var serializedProperties = typeof(SGScriptedImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+            var serializedProperties = typeof(ShaderGraphScriptedImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
             foreach (var field in serializedProperties)
             {
                 if (field.FieldType != typeof(SerializedProperty)) continue;
@@ -58,7 +58,7 @@ namespace SGImporter
         {
             if (GUILayout.Button("Paste and Import"))
             {
-                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourceFile = (ShaderGraphScriptedImporter)serializedObject.targetObject;
                 var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
                 
                 File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
@@ -67,11 +67,11 @@ namespace SGImporter
             if (GUILayout.Button("View Generated Shader"))
             {
                 
-                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourceFile = (ShaderGraphScriptedImporter)serializedObject.targetObject;
                 var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
 
                 const string tempPath = "Temp/ShaderGraphImporterTemp.shader";
-                File.WriteAllText(tempPath,Importer.ProcessShader((SGScriptedImporter)serializedObject.targetObject, sourcePath));
+                File.WriteAllText(tempPath,Importer.ProcessShader((ShaderGraphScriptedImporter)serializedObject.targetObject, sourcePath));
                 InternalEditorUtility.OpenFileAtLineExternal(tempPath, 0);
             }
             

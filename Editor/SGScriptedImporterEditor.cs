@@ -64,7 +64,7 @@ namespace SGImporter
                 File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
                 AssetDatabase.Refresh();
             }
-            if (GUILayout.Button("View Imported Code"))
+            if (GUILayout.Button("View Generated Shader"))
             {
                 
                 var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
@@ -78,37 +78,46 @@ namespace SGImporter
             
             serializedObject.Update();
             
-            
             EditorGUILayout.Space(10);
+            GUILayout.BeginVertical("box");
             EditorGUILayout.PropertyField(shadingModel, new GUIContent("Shading Model"));
+            EditorGUILayout.PropertyField(CustomEditor, new GUIContent("CustomEditor"));
+            EditorGUILayout.PropertyField(fallback, new GUIContent("Fallback"));
+            GUILayout.EndVertical();
+
             
             EditorGUILayout.Space(10);
+            GUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("Shader Features", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(alphaToCoverage, new GUIContent("Alpha To Coverage"));
             EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
+            EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
+            EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
             EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass"));
             if (grabPass.boolValue)
             {
                 EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
             }
-
+            GUILayout.EndVertical();
+            
+            
             EditorGUILayout.Space(10);
+            GUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
             EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
+            GUILayout.EndVertical();
             
-            
-            
-            EditorGUILayout.PropertyField(CustomEditor, new GUIContent("CustomEditor"));
-            EditorGUILayout.PropertyField(fallback, new GUIContent("Fallback"));
 
             EditorGUILayout.Space(10);
             thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));
             if (thirdPartyFoldout)
             {
+                GUILayout.BeginVertical("box");
                 EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
                 EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link"));
                 EditorGUILayout.PropertyField(dps, new GUIContent("DPS"));
+                GUILayout.EndVertical();
             }
 
 

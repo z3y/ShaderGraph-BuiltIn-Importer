@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 409627edbdcaaa04b9dafd64691fd23b
+guid: eda21566b65841940895c2121a6c878b
 ScriptedImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -15,7 +15,7 @@ ScriptedImporter:
   lodFadeCrossfade: 0
   bicubicLightmap: 1
   bakeryFeatures: 1
-  specularOcclusion: 0
+  specularOcclusion: 1
   ltcgi: 0
   dps: 0
   stencil: 0

@@ -18,7 +18,7 @@ namespace ShaderGraphImporter
     public class ShaderGraphScriptedImporterEditor: ScriptedImporterEditor
     {
         
-        #pragma warning disable CS0649
+#pragma warning disable CS0649
         private SerializedProperty alphaToCoverage;
         private SerializedProperty grabPass;
         private SerializedProperty grabPassName;
@@ -35,10 +35,11 @@ namespace ShaderGraphImporter
         private SerializedProperty fallback;
         private SerializedProperty cgInclude;
         private SerializedProperty shadingModel;
-        #pragma warning restore CS0649
+#pragma warning restore CS0649
 
 
         public bool firstTime = true;
+        private static bool thirdPartyFoldout = false;
 
         public override void OnEnable()
         {
@@ -53,7 +54,6 @@ namespace ShaderGraphImporter
             }
         }
         
-        private bool thirdPartyFoldout = false;
         public override void OnInspectorGUI()
         {
             if (GUILayout.Button("Paste and Import"))
@@ -79,15 +79,12 @@ namespace ShaderGraphImporter
             serializedObject.Update();
             
             EditorGUILayout.Space(10);
-            GUILayout.BeginVertical("box");
             EditorGUILayout.PropertyField(shadingModel, new GUIContent("Shading Model"));
             EditorGUILayout.PropertyField(CustomEditor, new GUIContent("CustomEditor"));
             EditorGUILayout.PropertyField(fallback, new GUIContent("Fallback"));
-            GUILayout.EndVertical();
 
-            
+
             EditorGUILayout.Space(10);
-            GUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("Shader Features", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(alphaToCoverage, new GUIContent("Alpha To Coverage"));
             EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
@@ -98,26 +95,21 @@ namespace ShaderGraphImporter
             {
                 EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
             }
-            GUILayout.EndVertical();
-            
-            
+
+
             EditorGUILayout.Space(10);
-            GUILayout.BeginVertical("box");
             EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
             EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
-            GUILayout.EndVertical();
-            
+
 
             EditorGUILayout.Space(10);
             thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));
             if (thirdPartyFoldout)
             {
-                GUILayout.BeginVertical("box");
                 EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
-                EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link"));
-                EditorGUILayout.PropertyField(dps, new GUIContent("DPS"));
-                GUILayout.EndVertical();
+                EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));
+                EditorGUILayout.PropertyField(dps, new GUIContent("DPS", "Raliv Dynamic Penetration System"));
             }
 
 

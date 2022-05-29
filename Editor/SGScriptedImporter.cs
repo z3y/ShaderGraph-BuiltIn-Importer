@@ -2,14 +2,13 @@
 using System.IO;
 using System.Text;
 using UnityEditor;
+using UnityEngine;
 
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.AssetImporters;
 #else
 using UnityEditor.Experimental.AssetImporters;
 #endif
-
-using UnityEngine;
 
 
 namespace SGImporter
@@ -45,7 +44,7 @@ namespace SGImporter
         public override void OnImportAsset(AssetImportContext ctx)
         {
             
-            var source = Importer.ProcessShader(this, ctx);
+            var source = Importer.ProcessShader(this, ctx.assetPath);
             
             var shader = ShaderUtil.CreateShaderAsset(ctx, source, false);
 
@@ -62,11 +61,11 @@ namespace SGImporter
             ctx.SetMainObject(shader);
 
 
-            /*var defaultMaterial = new Material(shader)
+            var defaultMaterial = new Material(shader)
             {
                 name = shader.name
             };
-            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);*/
+            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);
             
             
             AssetDatabase.ImportAsset(assetPath);
@@ -88,12 +87,11 @@ namespace SGImporter
             {
                 if (!importedAssets[i].EndsWith(SGScriptedImporter.EXT, StringComparison.Ordinal)) continue;
 
-                var shader = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(Shader));
+                var shaderObj = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(Shader));
 
-                if (shader is Shader)
+                if (shaderObj is Shader shader)
                 {
-                    Debug.Log(shader.name);
-                    ShaderUtil.RegisterShader((Shader)shader);
+                    ShaderUtil.RegisterShader(shader);
                 }
             }
             
@@ -137,11 +135,11 @@ namespace SGImporter
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
         
-        internal static string ProcessShader(SGScriptedImporter importerSettings, AssetImportContext ctx)
+        internal static string ProcessShader(SGScriptedImporter importerSettings, string sourcePath)
         {
             if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
 
-            var fileLines = File.ReadAllLines(ctx.assetPath);
+            var fileLines = File.ReadAllLines(sourcePath);
 
             // replace shader name
             var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");

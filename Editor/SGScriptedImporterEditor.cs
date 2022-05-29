@@ -1,11 +1,14 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.IO;
+using System.Net;
 using System.Reflection;
-using NUnit.Framework.Constraints;
 using UnityEditor;
-using UnityEditor.Experimental.AssetImporters;
 using UnityEngine;
+
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
 
 namespace SGImporter
 {
@@ -52,8 +55,9 @@ namespace SGImporter
         private bool thirdPartyFoldout = false;
         public override void OnInspectorGUI()
         {
-           serializedObject.Update();
-
+            serializedObject.Update();
+            
+            
             EditorGUILayout.Space(10);
             EditorGUILayout.PropertyField(shadingModel, new GUIContent("Shading Model"));
             
@@ -62,8 +66,11 @@ namespace SGImporter
             EditorGUILayout.PropertyField(alphaToCoverage, new GUIContent("Alpha To Coverage"));
             EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
             EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass"));
-            EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
-            
+            if (grabPass.boolValue)
+            {
+                EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
+            }
+
             EditorGUILayout.Space(10);
             EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
             EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
@@ -86,6 +93,23 @@ namespace SGImporter
 
             serializedObject.ApplyModifiedProperties();
             ApplyRevertGUI();
+            
+
+            EditorGUILayout.Space(10);
+            if (GUILayout.Button("Paste and Import"))
+            {
+                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
+                
+                File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
+                AssetDatabase.Refresh();
+            }
+            if (GUILayout.Button("Copy Generated Code"))
+            {
+                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
+                GUIUtility.systemCopyBuffer = Importer.ProcessShader((SGScriptedImporter)serializedObject.targetObject, sourcePath);
+            }
         }
     }
 

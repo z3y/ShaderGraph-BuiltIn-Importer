@@ -2,7 +2,7 @@
 
 namespace ShaderGraphImporter
 {
-    [CreateAssetMenu(fileName = "new Shader", menuName = "Shader/Shader Graph Importer")]
+   // [CreateAssetMenu(fileName = "new Shader", menuName = "Shader/Shader Graph Importer")]
     public class ImporterSettings : ScriptableObject
     {
         public string shaderName;

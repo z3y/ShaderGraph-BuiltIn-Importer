@@ -1,0 +1,26 @@
+fileFormatVersion: 2
+guid: 409627edbdcaaa04b9dafd64691fd23b
+ScriptedImporter:
+  internalIDToNameTable: []
+  externalObjects: {}
+  serializedVersion: 2
+  userData: 
+  assetBundleName: 
+  assetBundleVariant: 
+  script: {fileID: 11500000, guid: 3a5bd2b5732cfed4e99fb608bee64983, type: 3}
+  alphaToCoverage: 1
+  grabPass: 0
+  grabPassName: _GrabTexture
+  allowVertexLights: 1
+  lodFadeCrossfade: 0
+  bicubicLightmap: 1
+  bakeryFeatures: 1
+  specularOcclusion: 0
+  ltcgi: 0
+  dps: 0
+  stencil: 0
+  includeAudioLink: 0
+  CustomEditor: ShaderGraphImporter.DefaultInspector
+  fallback: 
+  cgInclude: []
+  shadingModel: 0

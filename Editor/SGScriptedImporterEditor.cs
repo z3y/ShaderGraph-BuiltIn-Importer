@@ -2,6 +2,7 @@
 using System.Net;
 using System.Reflection;
 using UnityEditor;
+using UnityEditorInternal;
 using UnityEngine;
 
 #if UNITY_2020_2_OR_NEWER
@@ -55,6 +56,26 @@ namespace SGImporter
         private bool thirdPartyFoldout = false;
         public override void OnInspectorGUI()
         {
+            if (GUILayout.Button("Paste and Import"))
+            {
+                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
+                
+                File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
+                AssetDatabase.Refresh();
+            }
+            if (GUILayout.Button("View Imported Code"))
+            {
+                
+                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
+                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
+
+                const string tempPath = "Temp/ShaderGraphImporterTemp.shader";
+                File.WriteAllText(tempPath,Importer.ProcessShader((SGScriptedImporter)serializedObject.targetObject, sourcePath));
+                InternalEditorUtility.OpenFileAtLineExternal(tempPath, 0);
+            }
+            
+            
             serializedObject.Update();
             
             
@@ -95,21 +116,7 @@ namespace SGImporter
             ApplyRevertGUI();
             
 
-            EditorGUILayout.Space(10);
-            if (GUILayout.Button("Paste and Import"))
-            {
-                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
-                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
-                
-                File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
-                AssetDatabase.Refresh();
-            }
-            if (GUILayout.Button("Copy Generated Code"))
-            {
-                var sourceFile = (SGScriptedImporter)serializedObject.targetObject;
-                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
-                GUIUtility.systemCopyBuffer = Importer.ProcessShader((SGScriptedImporter)serializedObject.targetObject, sourcePath);
-            }
+            
         }
     }
 

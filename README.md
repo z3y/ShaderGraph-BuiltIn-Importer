@@ -2,19 +2,23 @@ ShaderGraph built-in importer with custom shading and bug fixes. Target version 
 
 
 How to use:
-- Download and install Unity 2021 LTS and import Shader Graph (12.1.6) from the package manager.
-- Create a Shader using Shader Graph with built-in target.
+- Download and install Unity 2021 LTS and import Shader Graph (12.1.6) from the package manager
+- Create a Shader using Shader Graph with built-in target
 - Save Asset, Show In Project and Copy Shader
+- Install [Git](https://git-scm.com/) if you haven't already and restart Unity
 - Import this package using git URL `https://github.com/z3y/ShaderGraph-BuiltIn.git` in the Package Manager in Unity 2019.4 or later
-- Create a new importer object `Create > Shader > Shader Graph Importer`
+- Create a new shader graph importer `Create > Shader > Shader Graph Importer`
 - Paste and Import
 
-By default blank fields will be automatically filled with default and detected values. Update existing shaders: copy from shader graph and paste and import
 
-Includes Bakery features and better shading than Standard
+Includes Bakery features and more
 
 Notable bug fixes: GPU Instancing, Single Pass, Single Pass Instanced
+
+Currently not working on Quest
 
 
 Shader Graph and Built-In shader code owned by Unity, Licensed under Unity Companion License:
 https://unity3d.com/legal/licenses/Unity_Companion_License
+
+For other files licenses are included in folders or files

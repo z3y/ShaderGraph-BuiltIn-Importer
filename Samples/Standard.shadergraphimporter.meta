@@ -15,7 +15,7 @@ ScriptedImporter:
   lodFadeCrossfade: 0
   bicubicLightmap: 1
   bakeryFeatures: 1
-  specularOcclusion: 1
+  specularOcclusion: 0
   ltcgi: 0
   dps: 0
   stencil: 0

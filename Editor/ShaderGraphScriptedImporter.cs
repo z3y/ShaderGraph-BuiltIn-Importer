@@ -39,42 +39,27 @@ namespace ShaderGraphImporter
         public enum ShadingModel { Lit, FlatLit };
         internal const string EXT = "shadergraphimporter";
 
-
         public override void OnImportAsset(AssetImportContext ctx)
         {
-            
             var source = Importer.ProcessShader(this, ctx.assetPath);
             
             var shader = ShaderUtil.CreateShaderAsset(ctx, source, false);
-
-            try
-            {
-                EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { SGScriptedImporterData.dfgLut });
-            }
-            catch
-            {
-                // ignored
-            }
             
+            EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { ShaderGraphImporterProcessor.dfg });
+
             ctx.AddObjectToAsset("Shader", shader);
             ctx.SetMainObject(shader);
 
 
-            /*var defaultMaterial = new Material(shader)
+            var defaultMaterial = new Material(shader)
             {
                 name = shader.name
             };
-            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);*/
-            
+            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);
             
             AssetDatabase.ImportAsset(assetPath);
         }
 
-    }
-
-    static class SGScriptedImporterData
-    {
-        internal static readonly Texture2D dfgLut = AssetDatabase.LoadAssetAtPath("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr", typeof(Texture2D)) as Texture2D;
     }
 
     internal static class Importer
@@ -378,6 +363,11 @@ namespace ShaderGraphImporter
                 if (importerSettings.includeAudioLink && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/ShaderLibrary/Shim/Shims.hlsl\"", StringComparison.Ordinal))
                 {
                     lines[index] = lines[index] + '\n' + AudioLinkInclude;
+                }
+                
+                else if (trimmed.Equals("#pragma target 3.0", StringComparison.Ordinal))
+                {
+                    lines[index] = "#pragma target 4.5";
                 }
 
 

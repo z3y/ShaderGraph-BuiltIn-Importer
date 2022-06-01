@@ -1,5 +1,5 @@
-﻿using System.IO;
-using System.Net;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using UnityEditor;
 using UnityEditorInternal;
@@ -35,12 +35,15 @@ namespace ShaderGraphImporter
         private SerializedProperty fallback;
         private SerializedProperty cgInclude;
         private SerializedProperty shadingModel;
+        private SerializedProperty defaultMapsNames;
+        private SerializedProperty defaultMaps;
+        private SerializedProperty fallbackTags;
+        private SerializedProperty VRCFallback;
 #pragma warning restore CS0649
 
 
         public bool firstTime = true;
         private static bool thirdPartyFoldout = false;
-
         public override void OnEnable()
         {
             base.OnEnable();
@@ -111,11 +114,44 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));
                 EditorGUILayout.PropertyField(dps, new GUIContent("DPS", "Raliv Dynamic Penetration System"));
             }
+            
+            EditorGUILayout.Space(10);
+            EditorGUILayout.LabelField("Default Maps", EditorStyles.boldLabel);
+            for (int i = 0; i < defaultMaps.arraySize; i++)
+            {
+                var element = defaultMaps.GetArrayElementAtIndex(i);
+                var displayName = element.FindPropertyRelative("displayName").stringValue;
+                var texture =  element.FindPropertyRelative("texture");
+                EditorGUILayout.PropertyField(texture, new GUIContent(displayName));
+            }
 
+            EditorGUILayout.Space(10);
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                EditorGUILayout.LabelField("VRChat Fallback", EditorStyles.boldLabel);
+                var fallbackType = fallbackTags.FindPropertyRelative("type");
+                var fallBackMode = fallbackTags.FindPropertyRelative("mode");
+                var isDoubleSided = fallbackTags.FindPropertyRelative("doubleSided");
+                
+                EditorGUI.BeginChangeCheck();
+                EditorGUILayout.PropertyField(fallbackType, new GUIContent("Type"));
+                EditorGUILayout.PropertyField(fallBackMode, new GUIContent("Mode"));
+                EditorGUILayout.PropertyField(isDoubleSided, new GUIContent("Double Sided"));
+                if (EditorGUI.EndChangeCheck())
+                {
+                    var tags = new VRCFallbackTags()
+                    {
+                        doubleSided = isDoubleSided.boolValue,
+                        type = (VRCFallbackTags.ShaderType)fallbackType.enumValueIndex,
+                        mode = (VRCFallbackTags.ShaderMode)fallBackMode.enumValueIndex,
+                    };
+                    VRCFallback.stringValue = VRCFallbackTags.GetTag(tags);
+                }
+                EditorGUILayout.LabelField(VRCFallback.stringValue, EditorStyles.boldLabel);
+            }
 
             serializedObject.ApplyModifiedProperties();
             ApplyRevertGUI();
-            
 
             
         }

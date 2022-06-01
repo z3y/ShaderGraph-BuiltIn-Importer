@@ -20,9 +20,7 @@ namespace ShaderGraphImporter
 
             path += "/new Shader." + ShaderGraphScriptedImporter.EXT;
 
-            var cleanPath = AssetDatabase.GenerateUniqueAssetPath(path) ;
-            //File.WriteAllText(cleanPath, EmptyShader);
-            //var importer = new SGScriptedImporter();
+            var cleanPath = AssetDatabase.GenerateUniqueAssetPath(path);
 
             ProjectWindowUtil.CreateAssetWithContent(cleanPath, EmptyShader);
         }

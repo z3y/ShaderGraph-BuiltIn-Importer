@@ -23,4 +23,4 @@ ScriptedImporter:
   CustomEditor: ShaderGraphImporter.DefaultInspector
   fallback: 
   cgInclude: []
-  shadingModel: 0
+  shadingModel: 1

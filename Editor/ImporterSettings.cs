@@ -8,7 +8,6 @@ namespace ShaderGraphImporter
         //public string shaderCode;
         public bool alphaToCoverage = true;
         public bool grabPass = false;
-        public string grabPassName = "_GrabTexture";
         public bool allowVertexLights = true;
         public bool lodFadeCrossfade = false;
         public bool bicubicLightmap = true;

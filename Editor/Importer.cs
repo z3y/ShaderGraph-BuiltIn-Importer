@@ -21,11 +21,12 @@ namespace ShaderGraphImporter
     internal static class Importer
     {
         internal const int ImporterFeatureVersion = 2;
-        internal const string EXT = "shadergraphimporter";
 
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
         static readonly Texture2D dfg = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr");
+
+        const string GrabPassName = "_CameraOpaqueTexture"; // allows the scene color node to be used
         
 
         private static readonly string[] WrongMulticompiles =
@@ -146,8 +147,8 @@ namespace ShaderGraphImporter
                     }
                     
                     
-                    else if (trimmed.StartsWith("[NoScaleOffset]" + importerSettings.grabPassName + "(", StringComparison.Ordinal)
-                             || trimmed.StartsWith(importerSettings.grabPassName + "(", StringComparison.Ordinal))
+                    else if (trimmed.StartsWith("[NoScaleOffset]" + GrabPassName + "(", StringComparison.Ordinal)
+                             || trimmed.StartsWith(GrabPassName + "(", StringComparison.Ordinal))
                     {
                         var property = trimmed.Split('=');
 
@@ -258,7 +259,7 @@ namespace ShaderGraphImporter
 
                     if (importerSettings.grabPass)
                     {
-                        lines[index+1] += Environment.NewLine + "GrabPass { \"" + importerSettings.grabPassName + "\" }";
+                        lines[index+1] += Environment.NewLine + "GrabPass { \"" + GrabPassName + "\" }";
                     }
                 }
 

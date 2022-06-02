@@ -21,7 +21,6 @@ namespace ShaderGraphImporter
 #pragma warning disable CS0649
         private SerializedProperty alphaToCoverage;
         private SerializedProperty grabPass;
-        private SerializedProperty grabPassName;
         private SerializedProperty allowVertexLights;
         private SerializedProperty lodFadeCrossfade;
         private SerializedProperty bicubicLightmap;
@@ -86,11 +85,7 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
                 EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
                 EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
-                EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass"));
-                if (grabPass.boolValue)
-                {
-                    EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
-                }
+                EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass", "GrabPass with _CameraOpaqueTexture texture. Allows the scene color node to be used. Very expensive"));
 
                 EditorGUI.indentLevel++;
                 thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));

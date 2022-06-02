@@ -18,99 +18,18 @@ using UnityEditor.Experimental.AssetImporters;
 
 namespace ShaderGraphImporter
 {
-    
-    [ScriptedImporter(1, EXT)]
-    public class ShaderGraphScriptedImporter : ScriptedImporter
-    {
-        #region ExposedProperties
-        public bool alphaToCoverage = true;
-        public bool grabPass = false;
-        public string grabPassName = "_GrabTexture";
-        public bool allowVertexLights = true;
-        public bool lodFadeCrossfade = false;
-        public bool bicubicLightmap = true;
-        public bool bakeryFeatures = true;
-        public bool specularOcclusion = false;
-        public bool ltcgi = false;
-        public bool dps = false;
-        public bool stencil = false;
-        public bool includeAudioLink = false;
-        public string CustomEditor;
-        public string fallback;
-        public string[] cgInclude;
-        public ShadingModel shadingModel = ShadingModel.Lit;
-        public List<DefaultMap> defaultMaps = new List<DefaultMap>();
-        public VRCFallbackTags fallbackTags = defaultTag;
-        public string VRCFallback = string.Empty;
-        #endregion
-
-        public enum ShadingModel
-        {
-            Lit,
-            FlatLit
-        };
-        [Serializable] public struct DefaultMap
-        {
-            public string propertyName;
-            public Texture texture;
-            public bool modifiable;
-        }
-
-        private static readonly VRCFallbackTags defaultTag = new VRCFallbackTags()
-        {
-            type = VRCFallbackTags.ShaderType.Standard,
-            mode = VRCFallbackTags.ShaderMode.Opaque,
-            doubleSided = false
-        };
-        
-        internal const string EXT = "shadergraphimporter";
-
-        public override void OnImportAsset(AssetImportContext ctx)
-        {
-            
-            var source = Importer.ProcessShader(this, ctx.assetPath);
-
-            Shader shader = null;
-            var createShaderAssetMethod = typeof(ShaderUtil).GetMethod(
-                "CreateShaderAsset",
-                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.ExactBinding,
-                null,
-                new Type[] { typeof(AssetImportContext), typeof(string), typeof(bool) },
-                null);
-
-            if (createShaderAssetMethod != null)
-            {
-                shader = createShaderAssetMethod.Invoke(null, new object[] { ctx, source, false }) as Shader;
-            }
-            
-            //var shader = ShaderUtil.CreateShaderAsset(ctx, source, false);
-
-            EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { ShaderGraphImporterProcessor.dfg });
-
-            
-            ctx.AddObjectToAsset("Shader", shader);
-            ctx.SetMainObject(shader);
-
-            var defaultMaterial = new Material(shader)
-            {
-                name = shader.name
-            };
-            ctx.AddObjectToAsset("DefaultMaterial", defaultMaterial);
-            
-            AssetDatabase.ImportAsset(assetPath);
-        }
-
-    }
-    
-
     internal static class Importer
     {
-        public const int ImporterFeatureVersion = 2;
-        
+        internal const int ImporterFeatureVersion = 2;
+        internal const string EXT = "shadergraphimporter";
+
         private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
         
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        
+        
+        //EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { ShaderGraphImporterProcessor.dfg });
 
         private static readonly string[] WrongMulticompiles =
         {
@@ -140,7 +59,7 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
         
-        internal static string ProcessShader(ShaderGraphScriptedImporter importerSettings, string sourcePath)
+        internal static string ProcessShader(ImporterSettings importerSettings, string sourcePath)
         {
             if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
 
@@ -158,7 +77,7 @@ namespace ShaderGraphImporter
             return string.Join("\n", fileLines);
         }
 
-        private static void EditShaderFile(ref string[] lines, ShaderGraphScriptedImporter importerSettings)
+        private static void EditShaderFile(ref string[] lines, ImporterSettings importerSettings)
         {
             
             bool parsingProperties = true;
@@ -234,7 +153,7 @@ namespace ShaderGraphImporter
                         additionalProperties.AppendLine("[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}");
                         additionalProperties.AppendLine("[HideInInspector][Enum(Off, 0, On, 1)]_AlphaToMask (\"Alpha To Coverage\", Int) = 0");
 
-                        if (importerSettings.shadingModel == ShaderGraphScriptedImporter.ShadingModel.FlatLit)
+                        if (importerSettings.shadingModel == ShadingModel.FlatLit)
                         {
                             additionalProperties.AppendLine("[ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF(\"Specular Highlights\", Float) = 0");
                             additionalProperties.AppendLine("[ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF(\"Reflections\", Float) = 0");
@@ -305,10 +224,10 @@ namespace ShaderGraphImporter
 
                     switch (importerSettings.shadingModel)
                     {
-                        case ShaderGraphScriptedImporter.ShadingModel.Lit:
+                        case ShadingModel.Lit:
                             sb.AppendLine("#define SHADINGMODEL_LIT");
                             break;
-                        case ShaderGraphScriptedImporter.ShadingModel.FlatLit:
+                        case ShadingModel.FlatLit:
                             sb.AppendLine("#define SHADINGMODEL_FLATLIT");
                             sb.AppendLine("#pragma skip_variants SHADOWS_SCREEN");
                             // sb.AppendLine("#pragma skip_variants SHADOWS_SOFT");

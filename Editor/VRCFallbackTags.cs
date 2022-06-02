@@ -42,5 +42,12 @@ namespace ShaderGraphImporter
             
             return result;
         }
+        
+        public static VRCFallbackTags defaultTag = new VRCFallbackTags()
+        {
+            type = VRCFallbackTags.ShaderType.Standard,
+            mode = VRCFallbackTags.ShaderMode.Opaque,
+            doubleSided = false
+        };
     }
 }

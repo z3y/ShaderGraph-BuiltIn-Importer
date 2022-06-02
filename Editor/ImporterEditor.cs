@@ -14,8 +14,8 @@ using UnityEditor.Experimental.AssetImporters;
 namespace ShaderGraphImporter
 {
         
-    [CustomEditor(typeof(ShaderGraphScriptedImporter))]
-    public class ShaderGraphScriptedImporterEditor: ScriptedImporterEditor
+    [CustomEditor(typeof(ImporterSettings))]
+    public class ImporterEditor : Editor
     {
         
 #pragma warning disable CS0649
@@ -40,48 +40,38 @@ namespace ShaderGraphImporter
         private SerializedProperty fallbackTags;
         private SerializedProperty VRCFallback;
 #pragma warning restore CS0649
-
-
+        
         public bool firstTime = true;
         private static bool thirdPartyFoldout = false;
-        public override void OnEnable()
-        {
-            base.OnEnable();
-            
-            var serializedProperties = typeof(ShaderGraphScriptedImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
-            foreach (var field in serializedProperties)
-            {
-                if (field.FieldType != typeof(SerializedProperty)) continue;
-                
-                field.SetValue(this, serializedObject.FindProperty(field.Name));
-            }
-        }
-        
+
         public override void OnInspectorGUI()
         {
+            if (firstTime)
+            {
+                var serializedProperties = typeof(ImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
+                
+                Debug.Log(serializedProperties.Length);
+            
+                foreach (var field in serializedProperties)
+                {
+                    if (field.FieldType != typeof(SerializedProperty)) continue;
+                
+                    field.SetValue(this, serializedObject.FindProperty(field.Name));
+                }
+
+                firstTime = false;
+            }
+            
+            
             if (GUILayout.Button("Paste and Import"))
             {
-                var sourceFile = (ShaderGraphScriptedImporter)serializedObject.targetObject;
-                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
-                
-                //var shaderObj = AssetDatabase.LoadAssetAtPath<Shader>(sourcePath);
-                //if (shaderObj is Shader shader) ShaderUtil.ClearShaderMessages(shader);
-                
-                File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
-                AssetDatabase.Refresh();
-            }
-            if (GUILayout.Button("View Generated Shader"))
-            {
-                
-                var sourceFile = (ShaderGraphScriptedImporter)serializedObject.targetObject;
+                var sourceFile = (ImporterSettings)serializedObject.targetObject;
                 var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
 
-                const string tempPath = "Temp/ShaderGraphImporterTemp.shader";
-                File.WriteAllText(tempPath,Importer.ProcessShader((ShaderGraphScriptedImporter)serializedObject.targetObject, sourcePath));
-                InternalEditorUtility.OpenFileAtLineExternal(tempPath, 0);
+                //File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
+                //AssetDatabase.Refresh();
             }
-            
-            
+
             serializedObject.Update();
             
             EditorGUILayout.Space(10);
@@ -169,9 +159,7 @@ namespace ShaderGraphImporter
             }
 
             serializedObject.ApplyModifiedProperties();
-            ApplyRevertGUI();
 
-            
         }
     }
 

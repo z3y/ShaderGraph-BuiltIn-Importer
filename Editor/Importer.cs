@@ -77,8 +77,6 @@ namespace ShaderGraphImporter
             
             string shaderPath = importDirectory + '/' + rawShaderName.Replace('/', ' ') + ".shader";
 
-            Debug.Log(shaderPath);
-
             File.WriteAllLines(shaderPath, fileLines);
             AssetDatabase.Refresh();
 

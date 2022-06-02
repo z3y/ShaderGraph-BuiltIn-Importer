@@ -23,13 +23,10 @@ namespace ShaderGraphImporter
         internal const int ImporterFeatureVersion = 2;
         internal const string EXT = "shadergraphimporter";
 
-        private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
-        
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        static readonly Texture2D dfg = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr");
         
-        
-        //EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { ShaderGraphImporterProcessor.dfg });
 
         private static readonly string[] WrongMulticompiles =
         {
@@ -58,24 +55,38 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.unity.shadergraph/",
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
-        
-        internal static string ProcessShader(ImporterSettings importerSettings, string sourcePath)
-        {
-            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
 
-            var fileLines = File.ReadAllLines(sourcePath);
+ 
+        public static void ImportShader(ImporterSettings importerSettings, string source)
+        {
+            //importerSettings.shaderCode = source;
+            
+
+            var fileLines = source.Split('\n');
+
+            var importDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
 
             // replace shader name
             var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
+            var rawShaderName = shaderName;
             shaderName = $"Shader Graphs/{shaderName}";
             fileLines[0] = $"Shader \"{shaderName}\"";
 
             
             EditShaderFile(ref fileLines, importerSettings);
+            
+            string shaderPath = importDirectory + '/' + rawShaderName.Replace('/', ' ') + ".shader";
 
+            Debug.Log(shaderPath);
 
-            return string.Join("\n", fileLines);
+            File.WriteAllLines(shaderPath, fileLines);
+            AssetDatabase.Refresh();
+
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+
+            EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { dfg });
         }
+        
 
         private static void EditShaderFile(ref string[] lines, ImporterSettings importerSettings)
         {

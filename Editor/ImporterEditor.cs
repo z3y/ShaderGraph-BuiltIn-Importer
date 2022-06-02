@@ -49,9 +49,7 @@ namespace ShaderGraphImporter
             if (firstTime)
             {
                 var serializedProperties = typeof(ImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
-                
-                Debug.Log(serializedProperties.Length);
-            
+
                 foreach (var field in serializedProperties)
                 {
                     if (field.FieldType != typeof(SerializedProperty)) continue;
@@ -66,10 +64,7 @@ namespace ShaderGraphImporter
             if (GUILayout.Button("Paste and Import"))
             {
                 var sourceFile = (ImporterSettings)serializedObject.targetObject;
-                var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
-
-                //File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
-                //AssetDatabase.Refresh();
+                Importer.ImportShader(sourceFile, GUIUtility.systemCopyBuffer);
             }
 
             serializedObject.Update();
@@ -115,21 +110,6 @@ namespace ShaderGraphImporter
                 EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
                 EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
                 EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
-            }
-
-            
-            EditorGUILayout.Space(10);
-            using (new EditorGUILayout.VerticalScope("box"))
-            {
-                EditorGUILayout.LabelField("Default Maps", EditorStyles.boldLabel);
-                /*for (int i = 0; i < defaultMaps.arraySize; i++)
-                {
-                    var element = defaultMaps.GetArrayElementAtIndex(i);
-                    var displayName = element.FindPropertyRelative("displayName").stringValue;
-                    var texture = element.FindPropertyRelative("texture");
-                    
-                    EditorGUILayout.PropertyField(texture, new GUIContent(displayName));
-                }*/
             }
 
             EditorGUILayout.Space(10);

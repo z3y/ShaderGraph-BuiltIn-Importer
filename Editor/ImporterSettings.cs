@@ -5,7 +5,7 @@ namespace ShaderGraphImporter
     [CreateAssetMenu(fileName = "Importer", menuName = "Shader/Shader Graph Importer")]
     public class ImporterSettings : ScriptableObject
     {
-        public string shaderCode;
+        //public string shaderCode;
         public bool alphaToCoverage = true;
         public bool grabPass = false;
         public string grabPassName = "_GrabTexture";
@@ -18,7 +18,7 @@ namespace ShaderGraphImporter
         public bool dps = false;
         public bool stencil = false;
         public bool includeAudioLink = false;
-        public string CustomEditor;
+        public string CustomEditor = "ShaderGraphImporter.DefaultInspector";
         public string fallback;
         public string[] cgInclude;
         public ShadingModel shadingModel = ShadingModel.Lit;

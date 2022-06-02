@@ -37,6 +37,7 @@ namespace ShaderGraphImporter
             result += Enum.GetName(typeof(ShaderMode), tags.mode);
             if (tags.doubleSided) result += "DoubleSided";
 
+            result = result.Replace("Standard", string.Empty);
             result = result.Replace("Opaque", string.Empty);
             
             return result;

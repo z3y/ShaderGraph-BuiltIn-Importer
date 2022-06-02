@@ -64,6 +64,9 @@ namespace ShaderGraphImporter
                 var sourceFile = (ShaderGraphScriptedImporter)serializedObject.targetObject;
                 var sourcePath = AssetDatabase.GetAssetPath(sourceFile);
                 
+                //var shaderObj = AssetDatabase.LoadAssetAtPath<Shader>(sourcePath);
+                //if (shaderObj is Shader shader) ShaderUtil.ClearShaderMessages(shader);
+                
                 File.WriteAllText(sourcePath, GUIUtility.systemCopyBuffer);
                 AssetDatabase.Refresh();
             }
@@ -82,47 +85,61 @@ namespace ShaderGraphImporter
             serializedObject.Update();
             
             EditorGUILayout.Space(10);
-            EditorGUILayout.PropertyField(shadingModel, new GUIContent("Shading Model"));
-            EditorGUILayout.PropertyField(CustomEditor, new GUIContent("CustomEditor"));
-            EditorGUILayout.PropertyField(fallback, new GUIContent("Fallback"));
-
-
-            EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Shader Features", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(alphaToCoverage, new GUIContent("Alpha To Coverage"));
-            EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
-            EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
-            EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
-            EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass"));
-            if (grabPass.boolValue)
+            using (new EditorGUILayout.VerticalScope("box"))
             {
-                EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
+                EditorGUILayout.PropertyField(shadingModel, new GUIContent("Shading Model"));
+                EditorGUILayout.PropertyField(CustomEditor, new GUIContent("CustomEditor"));
+                EditorGUILayout.PropertyField(fallback, new GUIContent("Fallback"));
             }
 
 
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
-            EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
-            EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
+            using (new EditorGUILayout.VerticalScope("box"))
+            {
+                EditorGUILayout.LabelField("Shader Features", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(alphaToCoverage, new GUIContent("Alpha To Coverage"));
+                EditorGUILayout.PropertyField(bicubicLightmap, new GUIContent("Bicubic Lightmap"));
+                EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
+                EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
+                EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass"));
+                if (grabPass.boolValue)
+                {
+                    EditorGUILayout.PropertyField(grabPassName, new GUIContent("Grab Pass Name"));
+                }
+
+                EditorGUI.indentLevel++;
+                thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));
+                if (thirdPartyFoldout)
+                {
+                    EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
+                    EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));
+                    EditorGUILayout.PropertyField(dps, new GUIContent("DPS", "Raliv Dynamic Penetration System"));
+                }
+                EditorGUI.indentLevel--;
+            }
 
 
             EditorGUILayout.Space(10);
-            thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));
-            if (thirdPartyFoldout)
+            using (new EditorGUILayout.VerticalScope("box"))
             {
-                EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
-                EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));
-                EditorGUILayout.PropertyField(dps, new GUIContent("DPS", "Raliv Dynamic Penetration System"));
+                EditorGUILayout.LabelField("Multicompiles", EditorStyles.boldLabel);
+                EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
+                EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
             }
+
             
             EditorGUILayout.Space(10);
-            EditorGUILayout.LabelField("Default Maps", EditorStyles.boldLabel);
-            for (int i = 0; i < defaultMaps.arraySize; i++)
+            using (new EditorGUILayout.VerticalScope("box"))
             {
-                var element = defaultMaps.GetArrayElementAtIndex(i);
-                var displayName = element.FindPropertyRelative("displayName").stringValue;
-                var texture =  element.FindPropertyRelative("texture");
-                EditorGUILayout.PropertyField(texture, new GUIContent(displayName));
+                EditorGUILayout.LabelField("Default Maps", EditorStyles.boldLabel);
+                /*for (int i = 0; i < defaultMaps.arraySize; i++)
+                {
+                    var element = defaultMaps.GetArrayElementAtIndex(i);
+                    var displayName = element.FindPropertyRelative("displayName").stringValue;
+                    var texture = element.FindPropertyRelative("texture");
+                    
+                    EditorGUILayout.PropertyField(texture, new GUIContent(displayName));
+                }*/
             }
 
             EditorGUILayout.Space(10);
@@ -147,7 +164,8 @@ namespace ShaderGraphImporter
                     };
                     VRCFallback.stringValue = VRCFallbackTags.GetTag(tags);
                 }
-                EditorGUILayout.LabelField(VRCFallback.stringValue, EditorStyles.boldLabel);
+                if (!string.IsNullOrEmpty(VRCFallback.stringValue))
+                    EditorGUILayout.LabelField(VRCFallback.stringValue, EditorStyles.boldLabel);
             }
 
             serializedObject.ApplyModifiedProperties();

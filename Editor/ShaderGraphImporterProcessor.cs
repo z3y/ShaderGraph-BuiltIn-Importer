@@ -13,12 +13,23 @@ namespace ShaderGraphImporter
 
             for (int i = 0; i < importedAssets.Length; i++)
             {
-                if (!importedAssets[i].EndsWith(ShaderGraphScriptedImporter.EXT, StringComparison.Ordinal)) continue;
+                if (!IsShaderGraphImporter(importedAssets[i])) continue;
                 var shaderObj = AssetDatabase.LoadAssetAtPath(importedAssets[i], typeof(Shader));
                 if (!(shaderObj is Shader shader)) continue;
+                
+               // ShaderUtil.ClearShaderMessages(shader);
+                
 
                 ShaderUtil.RegisterShader(shader);
             }
+
+            for (int i = 0; i < deletedAssets.Length; i++)
+            {
+                Debug.Log("deleted");
+            }
+            
         }
+        
+        private static bool IsShaderGraphImporter(string path) => path.EndsWith(ShaderGraphScriptedImporter.EXT, StringComparison.Ordinal);
     }
 }

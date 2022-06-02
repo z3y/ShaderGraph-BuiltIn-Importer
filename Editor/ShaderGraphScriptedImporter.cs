@@ -7,6 +7,7 @@ using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
+using UnityEngine.Serialization;
 
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.AssetImporters;
@@ -51,8 +52,8 @@ namespace ShaderGraphImporter
         [Serializable] public struct DefaultMap
         {
             public string propertyName;
-            public string displayName;
-            public Texture2D texture;
+            public Texture texture;
+            public bool modifiable;
         }
 
         private static readonly VRCFallbackTags defaultTag = new VRCFallbackTags()
@@ -66,72 +67,29 @@ namespace ShaderGraphImporter
 
         public override void OnImportAsset(AssetImportContext ctx)
         {
+            
             var source = Importer.ProcessShader(this, ctx.assetPath);
+
+            Shader shader = null;
+            var createShaderAssetMethod = typeof(ShaderUtil).GetMethod(
+                "CreateShaderAsset",
+                System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.ExactBinding,
+                null,
+                new Type[] { typeof(AssetImportContext), typeof(string), typeof(bool) },
+                null);
+
+            if (createShaderAssetMethod != null)
+            {
+                shader = createShaderAssetMethod.Invoke(null, new object[] { ctx, source, false }) as Shader;
+            }
             
-            var shader = ShaderUtil.CreateShaderAsset(ctx, source, true);
-            
+            //var shader = ShaderUtil.CreateShaderAsset(ctx, source, false);
+
             EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { ShaderGraphImporterProcessor.dfg });
 
-
-            var defaultMapNames = new List<string>();
-            var defaultMapTextures = new List<Texture2D>();
-            foreach (var map in defaultMaps)
-            {
-                if (map.texture == null) continue;
-                
-                defaultMapNames.Add(map.propertyName);
-                defaultMapTextures.Add(map.texture);
-            }
-
-            if (defaultMapNames.Count > 0)
-            {
-                EditorMaterialUtility.SetShaderDefaults(shader, defaultMapNames.ToArray(), defaultMapTextures.ToArray());
-            }
-            
             
             ctx.AddObjectToAsset("Shader", shader);
             ctx.SetMainObject(shader);
-
-            var propertyCount = ShaderUtil.GetPropertyCount(shader);
-
-            var modifyableProperties = new List<string>();
-            var nonModifyableProperties = new List<string>();
-            for (int i = 0; i < propertyCount; i++)
-            {
-                if (shader.GetPropertyType(i) != ShaderPropertyType.Texture) continue;
-                
-                var propName = shader.GetPropertyName(i);
-
-                if (shader.GetPropertyFlags(i).HasFlag(ShaderPropertyFlags.NonModifiableTextureData))
-                {
-                    nonModifyableProperties.Add(propName);
-                }
-                else
-                {
-                    modifyableProperties.Add(propName);
-                    DefaultMap defaultMap = new DefaultMap()
-                    {
-                        propertyName = propName,
-                        displayName = shader.GetPropertyDescription(i),
-                        texture = null
-                    };
-
-                    if (defaultMaps.All(x => x.propertyName != propName))
-                    {
-                        defaultMaps.Add(defaultMap);
-                    }
-                }
-            }
-
-            for (var i = 0; i < defaultMaps.Count; i++)
-            {
-                var defaultMap = defaultMaps[i];
-                if (modifyableProperties.All(x => x != defaultMap.propertyName))
-                {
-                    defaultMaps.Remove(defaultMap);
-                }
-            }
-
 
             var defaultMaterial = new Material(shader)
             {
@@ -143,6 +101,7 @@ namespace ShaderGraphImporter
         }
 
     }
+    
 
     internal static class Importer
     {
@@ -481,7 +440,10 @@ namespace ShaderGraphImporter
                         lines[index] += "\n\"LTCGI\" = \"_LTCGI\"";
                     }
 
-                    lines[index] += "\n\"VRCFallback\" = \"" + importerSettings.VRCFallback +"\"";
+                    if (!string.IsNullOrEmpty(importerSettings.VRCFallback))
+                    {
+                        lines[index] += "\n\"VRCFallback\" = \"" + importerSettings.VRCFallback + "\"";
+                    }
                 }
 
 

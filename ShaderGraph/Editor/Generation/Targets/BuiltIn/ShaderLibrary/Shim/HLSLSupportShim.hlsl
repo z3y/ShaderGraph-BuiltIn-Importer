@@ -4,7 +4,7 @@
 // This file acts as the bridge to avoid including HlslSupport.cginc which contains old definitions for types, duplicate symbols, etc...
 
 // Use the include guard to force HlslSupport.cginc to not get included
-#define HLSL_SUPPORT_INCLUDED
+//#define HLSL_SUPPORT_INCLUDED
 
 // Disable warnings we aren't interested in
 //#if defined(UNITY_COMPILER_HLSL)
@@ -13,6 +13,8 @@
 #pragma warning (disable : 3571) // "pow(f,e) will not work for negative f"; however in majority of our calls to pow we know f is not negative
 #pragma warning (disable : 3206) // implicit truncation of vector type
 //#endif
+
+/*
 
 #if !defined(SHADER_API_GLES)
     // all platforms except GLES2.0 have built-in shadow comparison samplers
@@ -228,5 +230,5 @@ float4 texCUBEproj(samplerCUBE s, in float4 t)          { return texCUBE(s, t.xy
 #define Texture3D_float Texture3D
 #define Texture3D_half Texture3D
 #endif
-
+*/
 #endif // HLSL_SUPPORT_SHIM_INCLUDED

@@ -1,3 +1,4 @@
+/*
 #ifndef BUILTIN_SSAO_INCLUDED
 #define BUILTIN_SSAO_INCLUDED
 
@@ -412,3 +413,4 @@ half4 FinalBlur(Varyings input) : SV_Target
 }
 
 #endif //BUILTIN_SSAO_INCLUDED
+*/

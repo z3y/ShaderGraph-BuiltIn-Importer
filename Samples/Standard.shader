@@ -1,4 +1,4 @@
-Shader "Shader Graphs/Standard Example"
+Shader "Shader Graphs/Standard"
 {
     Properties
     {
@@ -31,23 +31,22 @@ Shader "Shader Graphs/Standard Example"
         [HideInInspector]_BUILTIN_QueueOffset("Float", Float) = 0
         [HideInInspector]_BUILTIN_QueueControl("Float", Float) = -1
 [HideInInspector][NonModifiableTextureData]_DFG("DFG Lut", 2D) = "white" {}
-[HideInInspector] [Enum(Off, 0, On, 1)] _AlphaToMask ("Alpha To Coverage", Int) = 0
+[HideInInspector][Enum(Off, 0, On, 1)]_AlphaToMask ("Alpha To Coverage", Int) = 0
 [ToggleOff(_SPECULARHIGHLIGHTS_OFF)]_SPECULARHIGHLIGHTS_OFF("Specular Highlights", Float) = 1
 [ToggleOff(_GLOSSYREFLECTIONS_OFF)]_GLOSSYREFLECTIONS_OFF("Reflections", Float) = 1
- _SpecularOcclusion("Specular Occlusion", Range(0,1)) = 0
-[Toggle(BAKERY_SH)] _BakerySH ("Bakery SH", Int) = 0
-[Toggle(LIGHTMAPPED_SPECULAR)] _LightmappedSpecular ("Lightmapped Specular", Int) = 0
-[Toggle(BAKERY_PROBESHNONLINEAR)] _NonLinearLightProbeSH ("Non-Linear LightProbe SH", Int) = 0
-[Toggle(_BICUBICLIGHTMAP)] _BicubicLightmapToggle("Bicubic Lightmap", Int) = 0
+[Toggle(BAKERY_SH)]_BakerySH("Bakery SH", Int) = 0
+[Toggle(LIGHTMAPPED_SPECULAR)]_LightmappedSpecular("Lightmapped Specular", Int) = 0
+[Toggle(BAKERY_PROBESHNONLINEAR)]_NonLinearLightProbeSH("Non-Linear LightProbe SH", Int) = 0
+[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmapToggle("Bicubic Lightmap", Int) = 0
+
     }
 HLSLINCLUDE
-#define IMPORTER_VERSION 1
-#define SHADINGMODEL_LIT
+#define IMPORTER_VERSION 2
+#define PREDEFINED_A2C
 #pragma skip_variants UNITY_HDR_ON
 #pragma skip_variants _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
 #pragma skip_variants LIGHTPROBE_SH
-#define PREDEFINED_A2C
-#define _SPECULAR_OCCLUSION
+#define SHADINGMODEL_LIT
 ENDHLSL
 
     SubShader
@@ -85,7 +84,7 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-        #pragma target 3.0
+#pragma target 4.0
         #pragma multi_compile_instancing
         #pragma multi_compile_fog
         #pragma multi_compile_fwdbase
@@ -96,6 +95,7 @@ AlphaToMask [_AlphaToMask]
 #pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR
 #pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR
 #pragma shader_feature_local_fragment _BICUBICLIGHTMAP
+
         #pragma vertex vert
         #pragma fragment frag
         
@@ -482,8 +482,7 @@ AlphaToMask [_AlphaToMask]
         // Graph
         
         // Graph Properties
-        CBUFFER_START(UnityPerMaterial)
-half _SpecularOcclusion;
+
         half _Cutoff;
         half4 _Color;
         float4 _MainTex_TexelSize;
@@ -502,7 +501,7 @@ half _SpecularOcclusion;
         #else
         half4 _EmissionColor;
         #endif
-        CBUFFER_END
+
         
         // Object and Global properties
         SAMPLER(SamplerState_Linear_Repeat);
@@ -594,14 +593,17 @@ half _SpecularOcclusion;
         float3 WorldSpaceNormal;
         };
         
-        void SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(half _Smoothness, half _Variance, half _Threshold, Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half IN, out half FilteredSmoothness_1)
+        void SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(half _Smoothness, half _Variance, half _Threshold, half3 _Normal, bool _Normal_84ee5763beed4058b08a96bb6627c26f_IsConnected, Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half IN, out half Out_1)
         {
+        half3 _Property_b3d2623cae3e44c7a527336fe205da20_Out_0 = _Normal;
+        bool _Property_b3d2623cae3e44c7a527336fe205da20_Out_0_IsConnected = _Normal_84ee5763beed4058b08a96bb6627c26f_IsConnected;
+        half3 _BranchOnInputConnection_b7dffcfbf0c44049b5d643c317a97d3d_Out_3 = _Property_b3d2623cae3e44c7a527336fe205da20_Out_0_IsConnected ? _Property_b3d2623cae3e44c7a527336fe205da20_Out_0 : IN.WorldSpaceNormal;
         half _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0 = _Smoothness;
         half _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0 = _Variance;
         half _Property_a4d150d2d7584489b3215b8a099783de_Out_0 = _Threshold;
         half _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
-        GeometricSpecularAA_half(IN.WorldSpaceNormal, _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0, _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0, _Property_a4d150d2d7584489b3215b8a099783de_Out_0, _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4);
-        FilteredSmoothness_1 = _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
+        GeometricSpecularAA_half(_BranchOnInputConnection_b7dffcfbf0c44049b5d643c317a97d3d_Out_3, _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0, _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0, _Property_a4d150d2d7584489b3215b8a099783de_Out_0, _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4);
+        Out_1 = _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
         }
         
         // Custom interpolators pre vertex
@@ -796,12 +798,12 @@ half _SpecularOcclusion;
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7;
             _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7.WorldSpaceNormal = IN.WorldSpaceNormal;
-            half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1;
-            SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(_Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4, _Property_dab7e9b3da314bef99115a2fb8d3568e_Out_0, _Property_171217c3659d4f179ccc6d1cb58caab4_Out_0, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1);
+            half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1;
+            SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(_Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4, _Property_dab7e9b3da314bef99115a2fb8d3568e_Out_0, _Property_171217c3659d4f179ccc6d1cb58caab4_Out_0, half3 (0, 0, 0), false, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             #if defined(_GSAA)
-            half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1;
+            half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1;
             #else
             half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4;
             #endif
@@ -1051,7 +1053,7 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-        #pragma target 3.0
+#pragma target 4.0
         #pragma multi_compile_instancing
         #pragma multi_compile_fog
         #pragma multi_compile_fwdadd_fullshadows
@@ -1441,8 +1443,7 @@ AlphaToMask [_AlphaToMask]
         // Graph
         
         // Graph Properties
-        CBUFFER_START(UnityPerMaterial)
-half _SpecularOcclusion;
+
         half _Cutoff;
         half4 _Color;
         float4 _MainTex_TexelSize;
@@ -1461,7 +1462,7 @@ half _SpecularOcclusion;
         #else
         half4 _EmissionColor;
         #endif
-        CBUFFER_END
+
         
         // Object and Global properties
         SAMPLER(SamplerState_Linear_Repeat);
@@ -1553,14 +1554,17 @@ half _SpecularOcclusion;
         float3 WorldSpaceNormal;
         };
         
-        void SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(half _Smoothness, half _Variance, half _Threshold, Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half IN, out half FilteredSmoothness_1)
+        void SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(half _Smoothness, half _Variance, half _Threshold, half3 _Normal, bool _Normal_84ee5763beed4058b08a96bb6627c26f_IsConnected, Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half IN, out half Out_1)
         {
+        half3 _Property_b3d2623cae3e44c7a527336fe205da20_Out_0 = _Normal;
+        bool _Property_b3d2623cae3e44c7a527336fe205da20_Out_0_IsConnected = _Normal_84ee5763beed4058b08a96bb6627c26f_IsConnected;
+        half3 _BranchOnInputConnection_b7dffcfbf0c44049b5d643c317a97d3d_Out_3 = _Property_b3d2623cae3e44c7a527336fe205da20_Out_0_IsConnected ? _Property_b3d2623cae3e44c7a527336fe205da20_Out_0 : IN.WorldSpaceNormal;
         half _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0 = _Smoothness;
         half _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0 = _Variance;
         half _Property_a4d150d2d7584489b3215b8a099783de_Out_0 = _Threshold;
         half _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
-        GeometricSpecularAA_half(IN.WorldSpaceNormal, _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0, _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0, _Property_a4d150d2d7584489b3215b8a099783de_Out_0, _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4);
-        FilteredSmoothness_1 = _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
+        GeometricSpecularAA_half(_BranchOnInputConnection_b7dffcfbf0c44049b5d643c317a97d3d_Out_3, _Property_c9bc103b66024ffba3d3e3412d005b49_Out_0, _Property_c162d5344b3348069a6d9e9ac8adf539_Out_0, _Property_a4d150d2d7584489b3215b8a099783de_Out_0, _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4);
+        Out_1 = _GeometricSpecularAACustomFunction_1ca78665196e457e8a856b8c3778275d_outputSmoothness_4;
         }
         
         // Custom interpolators pre vertex
@@ -1755,12 +1759,12 @@ half _SpecularOcclusion;
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             Bindings_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7;
             _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7.WorldSpaceNormal = IN.WorldSpaceNormal;
-            half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1;
-            SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(_Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4, _Property_dab7e9b3da314bef99115a2fb8d3568e_Out_0, _Property_171217c3659d4f179ccc6d1cb58caab4_Out_0, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1);
+            half _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1;
+            SG_GeometricSpecularAA_708471202ef3c24438a3ca206dfd56b4_half(_Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4, _Property_dab7e9b3da314bef99115a2fb8d3568e_Out_0, _Property_171217c3659d4f179ccc6d1cb58caab4_Out_0, half3 (0, 0, 0), false, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7, _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             #if defined(_GSAA)
-            half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_FilteredSmoothness_1;
+            half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _GeometricSpecularAA_e04a456dc1e447ab896d18f40091e8b7_Out_1;
             #else
             half _GeometricSpecularAA_352f344d09df43e68eb06175b93fbe6b_Out_0 = _Split_d539299eea0b46b4bcd0e3ce9b292f58_A_4;
             #endif
@@ -2940,6 +2944,9 @@ half _SpecularOcclusion;
 
 
 
+
+
+
         Pass
         {
             Name "ShadowCaster"
@@ -2964,7 +2971,7 @@ half _SpecularOcclusion;
         HLSLPROGRAM
         
         // Pragmas
-        #pragma target 3.0
+#pragma target 4.0
         #pragma multi_compile_shadowcaster
 #pragma multi_compile_instancing
         #pragma vertex vert
@@ -3235,8 +3242,7 @@ half _SpecularOcclusion;
         // Graph
         
         // Graph Properties
-        CBUFFER_START(UnityPerMaterial)
-half _SpecularOcclusion;
+
         half _Cutoff;
         half4 _Color;
         float4 _MainTex_TexelSize;
@@ -3255,7 +3261,7 @@ half _SpecularOcclusion;
         #else
         half4 _EmissionColor;
         #endif
-        CBUFFER_END
+
         
         // Object and Global properties
         SAMPLER(SamplerState_Linear_Repeat);
@@ -4102,7 +4108,7 @@ half _SpecularOcclusion;
         HLSLPROGRAM
         
         // Pragmas
-        #pragma target 3.0
+#pragma target 4.0
         #pragma vertex vert
         #pragma fragment frag
         
@@ -4385,8 +4391,7 @@ half _SpecularOcclusion;
         // Graph
         
         // Graph Properties
-        CBUFFER_START(UnityPerMaterial)
-half _SpecularOcclusion;
+
         half _Cutoff;
         half4 _Color;
         float4 _MainTex_TexelSize;
@@ -4405,7 +4410,7 @@ half _SpecularOcclusion;
         #else
         half4 _EmissionColor;
         #endif
-        CBUFFER_END
+
         
         // Object and Global properties
         SAMPLER(SamplerState_Linear_Repeat);

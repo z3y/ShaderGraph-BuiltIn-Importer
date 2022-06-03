@@ -1,7 +1,7 @@
 {
   "name": "com.z3y.shadergraph-builtin",
   "description": "Unity built-in Shader Graphs in 2019.4. Only .hlsl files and fixes for built-in\n\nSupported Shader Graph version: 12.1.6",
-  "version": "0.0.3",
+  "version": "0.1.0",
   "unity": "2019.4",
   "displayName": "Shader Graph Built-In",
   "hideInEditor": false

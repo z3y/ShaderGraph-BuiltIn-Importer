@@ -1,20 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
+using NUnit.Framework;
 using UnityEditor;
 using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.Serialization;
+
+#if UNITY_2020_2_OR_NEWER
+using UnityEditor.AssetImporters;
+#else
+using UnityEditor.Experimental.AssetImporters;
+#endif
+
 
 namespace ShaderGraphImporter
 {
     internal static class Importer
     {
-        public const int ImporterFeatureVersion = 2;
-        
-        private const string DefaultShaderEditor = "ShaderGraphImporter.DefaultInspector";
-        
+        internal const int ImporterFeatureVersion = 2;
+
         private const string AudioLinkInclude = "#include \"/Assets/AudioLink/Shaders/AudioLink.cginc\"";
         private const string LTCGIInclude = "#include \"Assets/_pi_/_LTCGI/Shaders/LTCGI.cginc\"";
+        static readonly Texture2D dfg = AssetDatabase.LoadAssetAtPath<Texture2D>("Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr");
+
+        const string GrabPassName = "_CameraOpaqueTexture"; // allows the scene color node to be used
+        
 
         private static readonly string[] WrongMulticompiles =
         {
@@ -43,41 +56,40 @@ namespace ShaderGraphImporter
             "#include \"Packages/com.unity.shadergraph/",
             "#include \"Packages/com.z3y.shadergraph-builtin/ShaderGraph/"
         };
-        
-        internal static void ImportShader(ref ImporterSettings importerSettings)
+
+ 
+        public static void ImportShader(ImporterSettings importerSettings, string source, bool applySettings = false)
         {
-            if (string.IsNullOrEmpty(importerSettings.importPath)) importerSettings.importPath = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
-            if (string.IsNullOrEmpty(importerSettings.CustomEditor)) importerSettings.CustomEditor = DefaultShaderEditor;
+            if (!applySettings) importerSettings.shaderCode = source;
             
-            var fileLines = importerSettings.shaderCode.Split('\n');
+            
+
+            var fileLines = source.Split('\n');
+
+            var importDirectory = Path.GetDirectoryName(AssetDatabase.GetAssetPath(importerSettings));
 
             // replace shader name
             var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
-            shaderName = $"Shader Graphs/{shaderName}";
-            if (string.IsNullOrEmpty(importerSettings.shaderName)) importerSettings.shaderName = shaderName;
-            fileLines[0] = $"Shader \"{importerSettings.shaderName}\"";
-
+            var rawShaderName = shaderName;
+            shaderName = $"Imported Shader Graphs/{shaderName}";
+            fileLines[0] = $"Shader \"{shaderName}\"";
+            
             
             EditShaderFile(ref fileLines, importerSettings);
+            
+            string shaderPath = importDirectory + '/' + rawShaderName.Replace('/', ' ') + ".shader";
 
-            if (!Directory.Exists(importerSettings.importPath))
-            {
-                Directory.CreateDirectory(importerSettings.importPath);
-            }
-            
-            // shader file name and path
-            var defaultFileName = Path.GetFileNameWithoutExtension(AssetDatabase.GetAssetPath(importerSettings));
-            if (string.IsNullOrEmpty(importerSettings.fileName)) importerSettings.fileName = defaultFileName;
-            if (!importerSettings.importPath.EndsWith("/")) importerSettings.importPath += "/";
-            string shaderPath = importerSettings.importPath + importerSettings.fileName + ".shader";
-            
+            importerSettings.shaderPath = shaderPath;
+
             File.WriteAllLines(shaderPath, fileLines);
-
             AssetDatabase.Refresh();
 
-            ApplyDFG(shaderPath);
-            AssetDatabase.ImportAsset(shaderPath, ImportAssetOptions.ImportRecursive);
+            var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+
+            EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { dfg });
+            AssetDatabase.ImportAsset(shaderPath);
         }
+        
 
         private static void EditShaderFile(ref string[] lines, ImporterSettings importerSettings)
         {
@@ -137,6 +149,15 @@ namespace ShaderGraphImporter
                     {
                         lines[index] = "[Enum(UnityEngine.Rendering.CullMode)]" + lines[index];
                     }
+                    
+                    
+                    else if (trimmed.StartsWith("[NoScaleOffset]" + GrabPassName + "(", StringComparison.Ordinal)
+                             || trimmed.StartsWith(GrabPassName + "(", StringComparison.Ordinal))
+                    {
+                        var property = trimmed.Split('=');
+
+                        lines[index] = property[0] + "= \"\" {}";
+                    }
 
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
@@ -181,7 +202,8 @@ namespace ShaderGraphImporter
                         if (importerSettings.dps)
                         {
                             additionalProperties.AppendLine("[Header(DPS Settings)][Space(10)][Toggle(RALIV_PENETRATOR)] _RALIV_PENETRATOR(\"Penetrator\", Int) = 0");
-                            additionalProperties.AppendLine("[Toggle(RALIV_ORIFICE)] _RALIV_ORIFICE(\"Oriface\", Int) = 0");
+                            // TODO: fix oriface bug. The vertex id might not be passed in correctly
+                            // additionalProperties.AppendLine("[Toggle(RALIV_ORIFICE)] _RALIV_ORIFICE(\"Oriface\", Int) = 0");
                             var dpsProperties = File.ReadAllText("Assets/RalivDynamicPenetrationSystem/Plugins/RalivDPS_Properties.cginc");
                             additionalProperties.AppendLine(dpsProperties);
                         }
@@ -211,6 +233,9 @@ namespace ShaderGraphImporter
                         sb.AppendLine("#pragma shader_feature_local_vertex RALIV_PENETRATOR");
                         sb.AppendLine("#pragma shader_feature_local_vertex RALIV_ORIFICE");
                     }
+                    
+                    if (importerSettings.lodFadeCrossfade) sb.AppendLine("#pragma multi_compile_fragment _ LOD_FADE_CROSSFADE");
+                    
 
                     switch (importerSettings.shadingModel)
                     {
@@ -236,6 +261,11 @@ namespace ShaderGraphImporter
 
 
                     lines[index] = sb.ToString() + '\n' + lines[index];
+
+                    if (importerSettings.grabPass)
+                    {
+                        lines[index+1] += Environment.NewLine + "GrabPass { \"" + GrabPassName + "\" }";
+                    }
                 }
 
 
@@ -267,9 +297,11 @@ namespace ShaderGraphImporter
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdbase", StringComparison.Ordinal))
                 {
                     var forwardBaseKeywords = new StringBuilder();
-                    
-                    forwardBaseKeywords.AppendLine("#pragma multi_compile_fragment _ VERTEXLIGHT_ON");
-                    
+
+                    forwardBaseKeywords.AppendLine(importerSettings.allowVertexLights
+                        ? "#pragma multi_compile_fragment _ VERTEXLIGHT_ON"
+                        : "#pragma skip_variants VERTEXLIGHT_ON");
+
                     forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF");
                     forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF");
 
@@ -307,6 +339,11 @@ namespace ShaderGraphImporter
                 {
                     lines[index] = lines[index] + '\n' + AudioLinkInclude;
                 }
+                
+                else if (trimmed.Equals("#pragma target 3.0", StringComparison.Ordinal))
+                {
+                    lines[index] = "#pragma target 4.5";
+                }
 
 
                 //remove unneeded passes
@@ -334,7 +371,12 @@ namespace ShaderGraphImporter
                 {
                     if (importerSettings.ltcgi)
                     {
-                        lines[index] += "\n \"LTCGI\" = \"_LTCGI\"";
+                        lines[index] += "\n\"LTCGI\" = \"_LTCGI\"";
+                    }
+
+                    if (!string.IsNullOrEmpty(importerSettings.VRCFallback))
+                    {
+                        lines[index] += "\n\"VRCFallback\" = \"" + importerSettings.VRCFallback + "\"";
                     }
                 }
 
@@ -399,17 +441,6 @@ namespace ShaderGraphImporter
             }
 
             return index;
-        }
-
-        
-        const string DFGLutPath = "Packages/com.z3y.shadergraph-builtin/Editor/dfg-multiscatter.exr";
-        private static void ApplyDFG(string shaderPath)
-        {
-
-            var texture = AssetDatabase.LoadAssetAtPath(DFGLutPath, typeof(Texture2D)) as Texture2D;
-
-            var importer = AssetImporter.GetAtPath(shaderPath) as ShaderImporter;
-            importer.SetNonModifiableTextures(new[] { "_DFG" }, new Texture[] { texture });
         }
     }
 }

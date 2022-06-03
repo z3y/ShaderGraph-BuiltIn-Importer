@@ -1,3 +1,5 @@
+/*
+
 // UNITY_SHADER_NO_UPGRADE
 
 #ifndef BUILTIN_SHADER_VARIABLES_INCLUDED
@@ -246,3 +248,4 @@ float4x4 OptimizeProjectionMatrix(float4x4 M)
 }
 
 #endif // BUILTIN_SHADER_VARIABLES_INCLUDED
+*/

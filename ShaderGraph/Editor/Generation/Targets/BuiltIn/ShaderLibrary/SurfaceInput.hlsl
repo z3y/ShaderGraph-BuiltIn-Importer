@@ -1,3 +1,4 @@
+/*
 #ifndef BUILTIN_INPUT_SURFACE_INCLUDED
 #define BUILTIN_INPUT_SURFACE_INCLUDED
 
@@ -57,3 +58,4 @@ half3 SampleEmission(float2 uv, half3 emissionColor, TEXTURE2D_PARAM(emissionMap
 }
 
 #endif
+*/

@@ -45,7 +45,7 @@ namespace ShaderGraphImporter
 
         public override void OnInspectorGUI()
         {
-            if (firstTime)
+            if (firstTime || alphaToCoverage is null)
             {
                 var serializedProperties = typeof(ImporterEditor).GetFields(BindingFlags.Instance | BindingFlags.NonPublic);
 

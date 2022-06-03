@@ -5,7 +5,8 @@ namespace ShaderGraphImporter
     [CreateAssetMenu(fileName = "Importer", menuName = "Shader/Shader Graph Importer")]
     public class ImporterSettings : ScriptableObject
     {
-        //public string shaderCode;
+        public string shaderCode;
+        public string shaderPath;
         public bool alphaToCoverage = true;
         public bool grabPass = false;
         public bool allowVertexLights = true;

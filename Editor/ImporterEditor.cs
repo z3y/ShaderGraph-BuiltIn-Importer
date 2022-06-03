@@ -134,6 +134,18 @@ namespace ShaderGraphImporter
             }
 
             serializedObject.ApplyModifiedProperties();
+            
+            if (GUILayout.Button("Apply Settings"))
+            {
+                var sourceFile = (ImporterSettings)serializedObject.targetObject;
+                Importer.ImportShader(sourceFile, sourceFile.shaderCode, true);
+            }
+            
+            if (GUILayout.Button("Select Shader"))
+            {
+                var sourceFile = (ImporterSettings)serializedObject.targetObject;
+                EditorGUIUtility.PingObject(AssetDatabase.LoadAssetAtPath<Shader>(sourceFile.shaderPath));
+            }
 
         }
     }

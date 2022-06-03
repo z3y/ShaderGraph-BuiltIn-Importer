@@ -58,9 +58,10 @@ namespace ShaderGraphImporter
         };
 
  
-        public static void ImportShader(ImporterSettings importerSettings, string source)
+        public static void ImportShader(ImporterSettings importerSettings, string source, bool applySettings = false)
         {
-            //importerSettings.shaderCode = source;
+            if (!applySettings) importerSettings.shaderCode = source;
+            
             
 
             var fileLines = source.Split('\n');
@@ -70,13 +71,15 @@ namespace ShaderGraphImporter
             // replace shader name
             var shaderName = fileLines[0].TrimStart().Replace("Shader \"", "").TrimEnd('"').Replace("/", " ");
             var rawShaderName = shaderName;
-            shaderName = $"Shader Graphs/{shaderName}";
+            shaderName = $"Imported Shader Graphs/{shaderName}";
             fileLines[0] = $"Shader \"{shaderName}\"";
-
+            
             
             EditShaderFile(ref fileLines, importerSettings);
             
             string shaderPath = importDirectory + '/' + rawShaderName.Replace('/', ' ') + ".shader";
+
+            importerSettings.shaderPath = shaderPath;
 
             File.WriteAllLines(shaderPath, fileLines);
             AssetDatabase.Refresh();
@@ -84,6 +87,7 @@ namespace ShaderGraphImporter
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
 
             EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { dfg });
+            AssetDatabase.ImportAsset(shaderPath);
         }
         
 

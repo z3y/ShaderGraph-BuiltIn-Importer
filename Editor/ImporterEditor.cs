@@ -38,11 +38,12 @@ namespace ShaderGraphImporter
         private SerializedProperty defaultMaps;
         private SerializedProperty fallbackTags;
         private SerializedProperty VRCFallback;
+        private SerializedProperty thirdPartyFoldout;
 #pragma warning restore CS0649
         
+        
         public bool firstTime = true;
-        private static bool thirdPartyFoldout = false;
-
+        
         public override void OnInspectorGUI()
         {
             if (firstTime || alphaToCoverage is null)
@@ -88,8 +89,8 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass", "GrabPass with _CameraOpaqueTexture texture. Allows the scene color node to be used. Very expensive"));
 
                 EditorGUI.indentLevel++;
-                thirdPartyFoldout = EditorGUILayout.Foldout(thirdPartyFoldout, new GUIContent("Third Party"));
-                if (thirdPartyFoldout)
+                thirdPartyFoldout.boolValue = EditorGUILayout.Foldout(thirdPartyFoldout.boolValue, new GUIContent("Third Party"));
+                if (thirdPartyFoldout.boolValue)
                 {
                     EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
                     EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));

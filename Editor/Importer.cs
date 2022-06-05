@@ -94,7 +94,6 @@ namespace ShaderGraphImporter
 
                 var textureName = new[] { "_DFG" };
                 var texture = new Texture[] { dfg };
-                Debug.Log("Applying lut");
                 EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, textureName, texture);
                 importer.SetNonModifiableTextures(textureName, texture); // sometimes it just doesnt set them
 

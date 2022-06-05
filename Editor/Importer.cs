@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.Serialization;
+using Object = UnityEngine.Object;
 
 #if UNITY_2020_2_OR_NEWER
 using UnityEditor.AssetImporters;
@@ -85,9 +86,24 @@ namespace ShaderGraphImporter
             AssetDatabase.Refresh();
 
             var shader = AssetDatabase.LoadAssetAtPath<Shader>(shaderPath);
+            var importer = AssetImporter.GetAtPath(shaderPath) as ShaderImporter;
 
-            EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, new[] { "_DFG" }, new Texture[] { dfg });
-            AssetDatabase.ImportAsset(shaderPath);
+            var material = new Material(shader);
+            if (material.GetTexture("_DFG") is null)
+            {
+
+                var textureName = new[] { "_DFG" };
+                var texture = new Texture[] { dfg };
+                Debug.Log("Applying lut");
+                EditorMaterialUtility.SetShaderNonModifiableDefaults(shader, textureName, texture);
+                importer.SetNonModifiableTextures(textureName, texture); // sometimes it just doesnt set them
+
+                AssetDatabase.ImportAsset(shaderPath);
+            }
+            Object.DestroyImmediate(material);
+            
+
+
         }
         
 

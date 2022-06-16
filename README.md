@@ -15,8 +15,6 @@ Includes Bakery features and more
 
 Notable bug fixes: GPU Instancing, Single Pass, Single Pass Instanced
 
-Currently not working on Quest
-
 
 Shader Graph and Built-In shader code owned by Unity, Licensed under Unity Companion License:
 https://unity3d.com/legal/licenses/Unity_Companion_License

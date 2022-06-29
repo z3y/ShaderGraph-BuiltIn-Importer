@@ -317,13 +317,13 @@ namespace ShaderGraphImporter
                         ? "#pragma multi_compile_fragment _ VERTEXLIGHT_ON"
                         : "#pragma skip_variants VERTEXLIGHT_ON");
 
-                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF");
-                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF");
+                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local _GLOSSYREFLECTIONS_OFF");
+                    forwardBaseKeywords.AppendLine("#pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF");
 
                     if (importerSettings.bakeryFeatures)
                     {
-                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_SH");
-                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local BAKERY_SH");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local LIGHTMAPPED_SPECULAR");
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR");
                     }
                     if (importerSettings.ltcgi)
@@ -342,7 +342,7 @@ namespace ShaderGraphImporter
                 }
                 else if (trimmed.StartsWith("#pragma multi_compile_fwdadd_fullshadows", StringComparison.Ordinal))
                 {
-                    lines[index] += "\n#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF";
+                    lines[index] += "\n#pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF";
                 }
 
                 if (importerSettings.ltcgi && lines[index].EndsWith("/ShaderGraph/Editor/Generation/Targets/BuiltIn/Editor/ShaderGraph/Includes/PBRForwardPass.hlsl\"", StringComparison.Ordinal))

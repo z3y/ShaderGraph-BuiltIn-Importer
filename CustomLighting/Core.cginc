@@ -5,10 +5,13 @@
 
 #ifdef SHADER_API_MOBILE
     #undef VERTEXLIGHT_PS
-    #undef BAKERY_SH
     #undef _BICUBICLIGHTMAP
     #undef BAKERY_PROBESHNONLINEAR
     #undef LTCGI
+#endif
+
+#ifndef LIGHTMAP_ON
+    #undef BAKERY_SH
 #endif
 
 #include "CommonFunctions.cginc"

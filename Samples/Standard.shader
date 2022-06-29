@@ -1,4 +1,4 @@
-Shader "Shader Graphs/Standard"
+Shader "Imported Shader Graphs/Standard"
 {
     Properties
     {
@@ -84,15 +84,15 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-#pragma target 4.0
+#pragma target 4.5
         #pragma multi_compile_instancing
         #pragma multi_compile_fog
         #pragma multi_compile_fwdbase
 #pragma multi_compile_fragment _ VERTEXLIGHT_ON
-#pragma shader_feature_local_fragment _GLOSSYREFLECTIONS_OFF
-#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
-#pragma shader_feature_local_fragment BAKERY_SH
-#pragma shader_feature_local_fragment LIGHTMAPPED_SPECULAR
+#pragma shader_feature_local _GLOSSYREFLECTIONS_OFF
+#pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
+#pragma shader_feature_local BAKERY_SH
+#pragma shader_feature_local LIGHTMAPPED_SPECULAR
 #pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR
 #pragma shader_feature_local_fragment _BICUBICLIGHTMAP
 
@@ -127,10 +127,10 @@ AlphaToMask [_AlphaToMask]
         #pragma shader_feature_local_fragment _ _BUILTIN_ALPHAPREMULTIPLY_ON
         #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
         #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
-        #pragma shader_feature_local_fragment _ _GSAA
-        #pragma shader_feature_local_fragment _ _BUMPMAP
-        #pragma shader_feature_local_fragment _ _MASKMAP
-        #pragma shader_feature_local_fragment _ _EMISSION
+        #pragma shader_feature_local _ _GSAA
+        #pragma shader_feature_local _ _BUMPMAP
+        #pragma shader_feature_local _ _MASKMAP
+        #pragma shader_feature_local _ _EMISSION
         
         #if defined(_GSAA) && defined(_BUMPMAP) && defined(_MASKMAP) && defined(_EMISSION)
             #define KEYWORD_PERMUTATION_0
@@ -553,6 +553,11 @@ AlphaToMask [_AlphaToMask]
             Out = A * B;
         }
         
+        void Unity_Lerp_half(half A, half B, half T, out half Out)
+        {
+            Out = lerp(A, B, T);
+        }
+        
         void Unity_Combine_half(half R, half G, half B, half A, out half4 RGBA, out half3 RGB, out half2 RG)
         {
             RGBA = half4(R, G, B, A);
@@ -735,34 +740,28 @@ AlphaToMask [_AlphaToMask]
             half _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_A_7 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0.a;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Split_b623d62bfe554ecfbf532885aea649dd_R_1 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[0];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_G_2 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[1];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_B_3 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[2];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_A_4 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[3];
-            #endif
-            #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2;
-            Unity_Multiply_half_half(_Property_a10f742ae4d94bf6b5302218048459d9_Out_0, _Split_b623d62bfe554ecfbf532885aea649dd_R_1, _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2);
+            Unity_Multiply_half_half(_Property_a10f742ae4d94bf6b5302218048459d9_Out_0, _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_R_4, _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Property_267f2c176568466cabb44d6feace6645_Out_0 = _OcclusionStrength;
+            half _Property_3ff285cd574d4b578d6f786f31947739_Out_0 = _OcclusionStrength;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Multiply_23be75e0987b45dbae4edb168be85942_Out_2;
-            Unity_Multiply_half_half(_Split_b623d62bfe554ecfbf532885aea649dd_G_2, _Property_267f2c176568466cabb44d6feace6645_Out_0, _Multiply_23be75e0987b45dbae4edb168be85942_Out_2);
+            half _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3;
+            Unity_Lerp_half(1, _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_G_5, _Property_3ff285cd574d4b578d6f786f31947739_Out_0, _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0 = _Glossiness;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2;
-            Unity_Multiply_half_half(_Split_b623d62bfe554ecfbf532885aea649dd_A_4, _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2);
+            Unity_Multiply_half_half(_SampleTexture2D_018795c6fdf84866951c49ac9caa1078_A_7, _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half4 _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4;
             half3 _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5;
             half2 _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6;
-            Unity_Combine_half(_Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2, _Multiply_23be75e0987b45dbae4edb168be85942_Out_2, 1, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2, _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4, _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5, _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6);
+            Unity_Combine_half(_Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2, _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3, 1, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2, _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4, _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5, _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Property_605cbe0a07104cd68b8b8ecd7db3b85d_Out_0 = _Metallic;
@@ -1053,11 +1052,11 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-#pragma target 4.0
+#pragma target 4.5
         #pragma multi_compile_instancing
         #pragma multi_compile_fog
         #pragma multi_compile_fwdadd_fullshadows
-#pragma shader_feature_local_fragment _SPECULARHIGHLIGHTS_OFF
+#pragma shader_feature_local _SPECULARHIGHLIGHTS_OFF
         #pragma vertex vert
         #pragma fragment frag
         
@@ -1088,10 +1087,10 @@ AlphaToMask [_AlphaToMask]
         #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
         #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
         #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
-        #pragma shader_feature_local_fragment _ _GSAA
-        #pragma shader_feature_local_fragment _ _BUMPMAP
-        #pragma shader_feature_local_fragment _ _MASKMAP
-        #pragma shader_feature_local_fragment _ _EMISSION
+        #pragma shader_feature_local _ _GSAA
+        #pragma shader_feature_local _ _BUMPMAP
+        #pragma shader_feature_local _ _MASKMAP
+        #pragma shader_feature_local _ _EMISSION
         
         #if defined(_GSAA) && defined(_BUMPMAP) && defined(_MASKMAP) && defined(_EMISSION)
             #define KEYWORD_PERMUTATION_0
@@ -1514,6 +1513,11 @@ AlphaToMask [_AlphaToMask]
             Out = A * B;
         }
         
+        void Unity_Lerp_half(half A, half B, half T, out half Out)
+        {
+            Out = lerp(A, B, T);
+        }
+        
         void Unity_Combine_half(half R, half G, half B, half A, out half4 RGBA, out half3 RGB, out half2 RG)
         {
             RGBA = half4(R, G, B, A);
@@ -1696,34 +1700,28 @@ AlphaToMask [_AlphaToMask]
             half _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_A_7 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0.a;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Split_b623d62bfe554ecfbf532885aea649dd_R_1 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[0];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_G_2 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[1];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_B_3 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[2];
-            half _Split_b623d62bfe554ecfbf532885aea649dd_A_4 = _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_RGBA_0[3];
-            #endif
-            #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2;
-            Unity_Multiply_half_half(_Property_a10f742ae4d94bf6b5302218048459d9_Out_0, _Split_b623d62bfe554ecfbf532885aea649dd_R_1, _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2);
+            Unity_Multiply_half_half(_Property_a10f742ae4d94bf6b5302218048459d9_Out_0, _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_R_4, _Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Property_267f2c176568466cabb44d6feace6645_Out_0 = _OcclusionStrength;
+            half _Property_3ff285cd574d4b578d6f786f31947739_Out_0 = _OcclusionStrength;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
-            half _Multiply_23be75e0987b45dbae4edb168be85942_Out_2;
-            Unity_Multiply_half_half(_Split_b623d62bfe554ecfbf532885aea649dd_G_2, _Property_267f2c176568466cabb44d6feace6645_Out_0, _Multiply_23be75e0987b45dbae4edb168be85942_Out_2);
+            half _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3;
+            Unity_Lerp_half(1, _SampleTexture2D_018795c6fdf84866951c49ac9caa1078_G_5, _Property_3ff285cd574d4b578d6f786f31947739_Out_0, _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0 = _Glossiness;
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2;
-            Unity_Multiply_half_half(_Split_b623d62bfe554ecfbf532885aea649dd_A_4, _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2);
+            Unity_Multiply_half_half(_SampleTexture2D_018795c6fdf84866951c49ac9caa1078_A_7, _Property_ebe4ab7794ba4ae58eed547bd08970b0_Out_0, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half4 _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4;
             half3 _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5;
             half2 _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6;
-            Unity_Combine_half(_Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2, _Multiply_23be75e0987b45dbae4edb168be85942_Out_2, 1, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2, _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4, _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5, _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6);
+            Unity_Combine_half(_Multiply_889a4ff548d94a28b8c184adf8d74ded_Out_2, _Lerp_7f32c0b7edfb499e9d338927aac49ebf_Out_3, 1, _Multiply_6a9205b25f814d3d8a64ab83bef26038_Out_2, _Combine_7c0dda39451645b38ba712f07f252eb5_RGBA_4, _Combine_7c0dda39451645b38ba712f07f252eb5_RGB_5, _Combine_7c0dda39451645b38ba712f07f252eb5_RG_6);
             #endif
             #if defined(KEYWORD_PERMUTATION_0) || defined(KEYWORD_PERMUTATION_1) || defined(KEYWORD_PERMUTATION_2) || defined(KEYWORD_PERMUTATION_3) || defined(KEYWORD_PERMUTATION_4) || defined(KEYWORD_PERMUTATION_5) || defined(KEYWORD_PERMUTATION_6) || defined(KEYWORD_PERMUTATION_7) || defined(KEYWORD_PERMUTATION_8) || defined(KEYWORD_PERMUTATION_9) || defined(KEYWORD_PERMUTATION_10) || defined(KEYWORD_PERMUTATION_11) || defined(KEYWORD_PERMUTATION_12) || defined(KEYWORD_PERMUTATION_13) || defined(KEYWORD_PERMUTATION_14) || defined(KEYWORD_PERMUTATION_15)
             half _Property_605cbe0a07104cd68b8b8ecd7db3b85d_Out_0 = _Metallic;
@@ -2946,7 +2944,6 @@ AlphaToMask [_AlphaToMask]
 
 
 
-
         Pass
         {
             Name "ShadowCaster"
@@ -2971,7 +2968,7 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-#pragma target 4.0
+#pragma target 4.5
         #pragma multi_compile_shadowcaster
 #pragma multi_compile_instancing
         #pragma vertex vert
@@ -2996,10 +2993,10 @@ AlphaToMask [_AlphaToMask]
         #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
         #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
         #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
-        #pragma shader_feature_local_fragment _ _GSAA
-        #pragma shader_feature_local_fragment _ _BUMPMAP
-        #pragma shader_feature_local_fragment _ _MASKMAP
-        #pragma shader_feature_local_fragment _ _EMISSION
+        #pragma shader_feature_local _ _GSAA
+        #pragma shader_feature_local _ _BUMPMAP
+        #pragma shader_feature_local _ _MASKMAP
+        #pragma shader_feature_local _ _EMISSION
         
         #if defined(_GSAA) && defined(_BUMPMAP) && defined(_MASKMAP) && defined(_EMISSION)
             #define KEYWORD_PERMUTATION_0
@@ -4108,7 +4105,7 @@ AlphaToMask [_AlphaToMask]
         HLSLPROGRAM
         
         // Pragmas
-#pragma target 4.0
+#pragma target 4.5
         #pragma vertex vert
         #pragma fragment frag
         
@@ -4131,10 +4128,10 @@ AlphaToMask [_AlphaToMask]
         #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
         #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
         #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
-        #pragma shader_feature_local_fragment _ _GSAA
-        #pragma shader_feature_local_fragment _ _BUMPMAP
-        #pragma shader_feature_local_fragment _ _MASKMAP
-        #pragma shader_feature_local_fragment _ _EMISSION
+        #pragma shader_feature_local _ _GSAA
+        #pragma shader_feature_local _ _BUMPMAP
+        #pragma shader_feature_local _ _MASKMAP
+        #pragma shader_feature_local _ _EMISSION
         
         #if defined(_GSAA) && defined(_BUMPMAP) && defined(_MASKMAP) && defined(_EMISSION)
             #define KEYWORD_PERMUTATION_0

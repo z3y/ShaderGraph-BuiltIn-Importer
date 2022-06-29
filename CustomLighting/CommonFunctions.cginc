@@ -224,6 +224,10 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
         
         UNITY_LIGHT_ATTENUATION(lightAttenuation, input, input.worldPos.xyz);
         lightData.Attenuation = lightAttenuation;
+        #if defined(UNITY_PASS_FORWARDBASE) && !defined(SHADOWS_SCREEN)
+            lightData.Attenuation = 1.;
+        #endif
+    
         lightData.Color = lightAttenuation * _LightColor0.rgb;
         lightData.FinalColor = (lightData.NoL * lightData.Color);
 
@@ -256,12 +260,7 @@ void InitializeLightData(inout LightDataCustom lightData, float3 normalWS, float
             half properLuminance = calculateluminance(magic + normalLight);
             lightData.FinalColor = properLightColor * max(0.0001, (target / properLuminance));
 
-            #ifdef UNITY_PASS_FORWARDBASE
-            if (!any(_LightColor0.rgb))
-            {
-                lightData.Attenuation = 1.;
-            }
-            #endif
+            
 
             lightData.FinalColor = min(lightData.FinalColor, 1.0) * lightData.Attenuation;
         #endif

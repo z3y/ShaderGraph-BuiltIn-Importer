@@ -124,10 +124,10 @@ AlphaToMask [_AlphaToMask]
 
 
 
-        #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
-        #pragma shader_feature_local_fragment _ _BUILTIN_ALPHAPREMULTIPLY_ON
-        #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
-        #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
+        #pragma shader_feature_local _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
+        #pragma shader_feature_local _ _BUILTIN_ALPHAPREMULTIPLY_ON
+        #pragma shader_feature_local _ _BUILTIN_AlphaClip
+        #pragma shader_feature_local _ _BUILTIN_ALPHATEST_ON
         #pragma shader_feature_local _ _GSAA
         #pragma shader_feature_local _ _BUMPMAP
         #pragma shader_feature_local _ _MASKMAP
@@ -1118,9 +1118,9 @@ AlphaToMask [_AlphaToMask]
 
 
 
-        #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
-        #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
-        #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
+        #pragma shader_feature_local _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
+        #pragma shader_feature_local _ _BUILTIN_AlphaClip
+        #pragma shader_feature_local _ _BUILTIN_ALPHATEST_ON
         #pragma shader_feature_local _ _GSAA
         #pragma shader_feature_local _ _BUMPMAP
         #pragma shader_feature_local _ _MASKMAP
@@ -3090,9 +3090,9 @@ AlphaToMask [_AlphaToMask]
         
         // Keywords
 
-        #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
-        #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
-        #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
+        #pragma shader_feature_local _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
+        #pragma shader_feature_local _ _BUILTIN_AlphaClip
+        #pragma shader_feature_local _ _BUILTIN_ALPHATEST_ON
         #pragma shader_feature_local _ _GSAA
         #pragma shader_feature_local _ _BUMPMAP
         #pragma shader_feature_local _ _MASKMAP
@@ -4291,9 +4291,9 @@ AlphaToMask [_AlphaToMask]
         
         // Keywords
         #pragma shader_feature _ _SMOOTHNESS_TEXTURE_ALBEDO_CHANNEL_A
-        #pragma shader_feature_local_fragment _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
-        #pragma shader_feature_local_fragment _ _BUILTIN_AlphaClip
-        #pragma shader_feature_local_fragment _ _BUILTIN_ALPHATEST_ON
+        #pragma shader_feature_local _ _BUILTIN_SURFACE_TYPE_TRANSPARENT
+        #pragma shader_feature_local _ _BUILTIN_AlphaClip
+        #pragma shader_feature_local _ _BUILTIN_ALPHATEST_ON
         #pragma shader_feature_local _ _GSAA
         #pragma shader_feature_local _ _BUMPMAP
         #pragma shader_feature_local _ _MASKMAP

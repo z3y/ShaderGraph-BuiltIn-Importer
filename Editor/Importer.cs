@@ -127,6 +127,7 @@ namespace ShaderGraphImporter
                     lines[index] = lines[index].Replace(ShaderGraphLibraryMatch[0], ShaderGraphLibraryMatch[1]);
                 }
 
+                
 
                 if (parsingProperties)
                 {
@@ -283,6 +284,11 @@ namespace ShaderGraphImporter
                     }
                 }
 
+                // fix for a unity bug, stage keywords dont work on quest
+                else if (trimmed.StartsWith("#pragma shader_feature_local_fragment", StringComparison.Ordinal))
+                {
+                    lines[index] = lines[index].Replace("shader_feature_local_fragment", "shader_feature_local");
+                }
 
                 // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))

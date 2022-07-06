@@ -206,7 +206,10 @@ half3 GetF0(half reflectance, half metallic, half3 albedo)
 
 half3 MainLightSpecular(LightDataCustom lightData, half NoV, half clampedRoughness, half3 f0)
 {
-    half3 F = F_Schlick(lightData.LoH, f0) * DFGEnergyCompensation;
+    half3 F = F_Schlick(lightData.LoH, f0);
+    #ifndef SHADER_API_MOBILE
+        F *= DFGEnergyCompensation;
+    #endif
     half D = D_GGX2(lightData.NoH, clampedRoughness);
     half V = V_SmithGGXCorrelated(NoV, lightData.NoL, clampedRoughness);
 

@@ -17,6 +17,7 @@ ShaderGraph built-in importer with custom shading and bug fixes. Target version 
 - Alpha to coverage
 - LTCGI
 - Audio Link
+- Flat Lit
 
 Notable bug fixes: GPU Instancing, Single Pass, Single Pass Instanced
 

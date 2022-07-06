@@ -94,7 +94,9 @@ namespace ShaderGraphImporter
                 {
                     EditorGUILayout.PropertyField(ltcgi, new GUIContent("LTCGI"));
                     EditorGUILayout.PropertyField(includeAudioLink, new GUIContent("Audio Link", "Include AudioLink.cginc"));
+#if SGIDPS // not sure if it follows tos so ill just disable it
                     EditorGUILayout.PropertyField(dps, new GUIContent("DPS", "Raliv Dynamic Penetration System"));
+#endif
                 }
                 EditorGUI.indentLevel--;
             }

@@ -21,9 +21,9 @@ ShaderGraph built-in importer with custom shading and bug fixes. Target version 
 
 Notable bug fixes: GPU Instancing, Single Pass, Single Pass Instanced
 
-Bugs:
 - Unity has a shader graph variant limit but its too low. Increase it in `Preferences > Shader Graph > Shader Variant Limit`
 - Stage keywords dont work on Quest, use only All stages
+- Make sure to follow standard property naming convetions so your shaders can fallback properly
 
 
 Shader Graph and Built-In shader code owned by Unity, Licensed under Unity Companion License:

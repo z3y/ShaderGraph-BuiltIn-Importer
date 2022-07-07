@@ -25,6 +25,7 @@ namespace ShaderGraphImporter
         public VRCFallbackTags fallbackTags = VRCFallbackTags.defaultTag;
         public string VRCFallback = string.Empty;
         public bool thirdPartyFoldout = false;
+        public Shader additionalPass;
     }
 
     public enum ShadingModel { Lit, FlatLit };

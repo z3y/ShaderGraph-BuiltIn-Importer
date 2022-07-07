@@ -39,9 +39,10 @@ namespace ShaderGraphImporter
         private SerializedProperty fallbackTags;
         private SerializedProperty VRCFallback;
         private SerializedProperty thirdPartyFoldout;
+        private SerializedProperty additionalPass;
 #pragma warning restore CS0649
-        
-        
+
+
         public bool firstTime = true;
         
         public override void OnInspectorGUI()
@@ -87,6 +88,7 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
                 EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
                 EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass", "GrabPass with _CameraOpaqueTexture texture. Allows the scene color node to be used. Very expensive"));
+                EditorGUILayout.ObjectField(additionalPass, new GUIContent("Additional Pass", "Take's the first pass from another shadergraph shader and adds it to the shader. Mostly useful for Outlines"));
 
                 EditorGUI.indentLevel++;
                 thirdPartyFoldout.boolValue = EditorGUILayout.Foldout(thirdPartyFoldout.boolValue, new GUIContent("Third Party"));
@@ -109,6 +111,8 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(allowVertexLights, new GUIContent("Vertex Lights"));
                 EditorGUILayout.PropertyField(lodFadeCrossfade, new GUIContent("LOD Fade Crossfade"));
             }
+
+
 
             EditorGUILayout.Space(10);
             using (new EditorGUILayout.VerticalScope("box"))

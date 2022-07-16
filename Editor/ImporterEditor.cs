@@ -88,7 +88,7 @@ namespace ShaderGraphImporter
                 EditorGUILayout.PropertyField(bakeryFeatures, new GUIContent("Bakery"));
                 EditorGUILayout.PropertyField(specularOcclusion, new GUIContent("Specular Occlusion"));
                 EditorGUILayout.PropertyField(grabPass, new GUIContent("Grab Pass", "GrabPass with _CameraOpaqueTexture texture. Allows the scene color node to be used. Very expensive"));
-                EditorGUILayout.ObjectField(additionalPass, new GUIContent("Additional Pass", "Take's the first pass from another shadergraph shader and adds it to the shader. Mostly useful for Outlines"));
+                EditorGUILayout.ObjectField(additionalPass, new GUIContent("Additional Pass", "Take's the first pass from another shadergraph shader and properties and adds it to the shader. Mostly useful for Outlines"));
 
                 EditorGUI.indentLevel++;
                 thirdPartyFoldout.boolValue = EditorGUILayout.Foldout(thirdPartyFoldout.boolValue, new GUIContent("Third Party"));

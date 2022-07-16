@@ -32,6 +32,4 @@ https://unity3d.com/legal/licenses/Unity_Companion_License
 For other files licenses are included in folders or files
 
 #
-If you want to ask something add me z3y#3214 or join https://discord.gg/bw46tKgRFT
-
-Nodes: https://github.com/z3y/ShaderGraph-Nodes
+If you want to ask something join https://discord.gg/bw46tKgRFT

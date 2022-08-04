@@ -215,8 +215,9 @@ namespace ShaderGraphImporter
 
                         if (importerSettings.bakeryFeatures)
                         {
-                            additionalProperties.AppendLine("[Toggle(BAKERY_SH)]_BakerySH(\"Bakery SH\", Int) = 0");
-                            additionalProperties.AppendLine("[Toggle(LIGHTMAPPED_SPECULAR)]_LightmappedSpecular(\"Lightmapped Specular\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(BAKERY_SH)] _BAKERY_SH(\"Bakery SH\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(BAKERY_MONOSH)] _BAKERY_MONOSH(\"Bakery Mono SH\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(_LIGHTMAPPED_SPECULAR)]_LightmappedSpecular(\"Lightmapped Specular\", Int) = 0");
                             additionalProperties.AppendLine("[Toggle(BAKERY_PROBESHNONLINEAR)]_NonLinearLightProbeSH(\"Non-Linear LightProbe SH\", Int) = 0");
                         }
                         if (importerSettings.ltcgi)
@@ -226,7 +227,7 @@ namespace ShaderGraphImporter
                         }
                         if (importerSettings.bicubicLightmap)
                         {
-                            additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmap(\"Bicubic Lightmap\", Int) = 0");
                         }
 
                         if (importerSettings.dps)
@@ -351,7 +352,8 @@ namespace ShaderGraphImporter
                     if (importerSettings.bakeryFeatures)
                     {
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local BAKERY_SH");
-                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local LIGHTMAPPED_SPECULAR");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local BAKERY_MONOSH");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local _LIGHTMAPPED_SPECULAR");
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR");
                     }
                     if (importerSettings.ltcgi)

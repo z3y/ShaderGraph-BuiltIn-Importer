@@ -69,7 +69,7 @@ void BakerySHLightmapAndSpecular(inout half3 lightMap, float2 lightmapUV, inout 
             lightMap = L0 + normalWS.x * L1x + normalWS.y * L1y + normalWS.z * L1z;
         #endif
 
-        #ifdef LIGHTMAPPED_SPECULAR
+        #ifdef _LIGHTMAPPED_SPECULAR
             float3 grayScaleVec = float3(0.2125, 0.7154, 0.0721);
             float3 dominantDir = float3(dot(nL1x, grayScaleVec), dot(nL1y, grayScaleVec), dot(nL1z, grayScaleVec));
             float3 halfDir = Unity_SafeNormalize(normalize(dominantDir) + viewDir);

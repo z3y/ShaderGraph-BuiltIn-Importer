@@ -111,6 +111,14 @@ namespace ShaderGraphImporter
             
             bool parsingProperties = true;
             bool materialOverrideOn = false;
+            bool passAdded = false;
+
+
+            string[] additionalPass = null;
+            if (importerSettings.additionalPass != null)
+            {
+                additionalPass = File.ReadAllLines(AssetDatabase.GetAssetPath(importerSettings.additionalPass));
+            }
 
             for (var index = 0; index < lines.Length; index++)
             {
@@ -178,6 +186,12 @@ namespace ShaderGraphImporter
                     // additional properties
                     else if (trimmed.StartsWith("[HideInInspector]_BUILTIN_QueueControl", StringComparison.Ordinal))
                     {
+
+                        if (importerSettings.additionalPass != null)
+                        {
+                            lines[index] = FindAdditionalProperties(additionalPass) + Environment.NewLine + lines[index];
+                        }
+
                         var additionalProperties = new StringBuilder();
                         
                         additionalProperties.AppendLine("[HideInInspector][NonModifiableTextureData]_DFG(\"DFG Lut\", 2D) = \"white\" {}");
@@ -201,8 +215,9 @@ namespace ShaderGraphImporter
 
                         if (importerSettings.bakeryFeatures)
                         {
-                            additionalProperties.AppendLine("[Toggle(BAKERY_SH)]_BakerySH(\"Bakery SH\", Int) = 0");
-                            additionalProperties.AppendLine("[Toggle(LIGHTMAPPED_SPECULAR)]_LightmappedSpecular(\"Lightmapped Specular\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(BAKERY_SH)] _BAKERY_SH(\"Bakery SH\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(BAKERY_MONOSH)] _BAKERY_MONOSH(\"Bakery Mono SH\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(_LIGHTMAPPED_SPECULAR)]_LightmappedSpecular(\"Lightmapped Specular\", Int) = 0");
                             additionalProperties.AppendLine("[Toggle(BAKERY_PROBESHNONLINEAR)]_NonLinearLightProbeSH(\"Non-Linear LightProbe SH\", Int) = 0");
                         }
                         if (importerSettings.ltcgi)
@@ -212,7 +227,7 @@ namespace ShaderGraphImporter
                         }
                         if (importerSettings.bicubicLightmap)
                         {
-                            additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmapToggle(\"Bicubic Lightmap\", Int) = 0");
+                            additionalProperties.AppendLine("[Toggle(_BICUBICLIGHTMAP)]_BicubicLightmap(\"Bicubic Lightmap\", Int) = 0");
                         }
 
                         if (importerSettings.dps)
@@ -280,9 +295,15 @@ namespace ShaderGraphImporter
 
                     if (importerSettings.grabPass)
                     {
-                        lines[index+1] += Environment.NewLine + "GrabPass { \"" + GrabPassName + "\" }";
+                        lines[index + 1] += Environment.NewLine + "GrabPass { \"" + GrabPassName + "\" }";
+                    }
+
+                    if (importerSettings.additionalPass != null)
+                    {
+                        lines[index + 1] += Environment.NewLine + FindAdditionalPass(additionalPass);
                     }
                 }
+
 
                 // fix for a unity bug, stage keywords dont work on quest
                 else if (trimmed.StartsWith("#pragma shader_feature_local_fragment", StringComparison.Ordinal))
@@ -290,12 +311,14 @@ namespace ShaderGraphImporter
                     lines[index] = lines[index].Replace("shader_feature_local_fragment", "shader_feature_local");
                 }
 
+
+
                 // pass fixes
                 else if (trimmed.Equals("Name \"BuiltIn Forward\"", StringComparison.Ordinal) || trimmed.Equals("Name \"Pass\"", StringComparison.Ordinal))
                 {
                     if (importerSettings.alphaToCoverage && materialOverrideOn) lines[index] += '\n' + "AlphaToMask [_AlphaToMask]";
 
-                    
+
                 }
                 else if (trimmed.Equals("Blend SrcAlpha One, One One", StringComparison.Ordinal))
                 {
@@ -329,7 +352,8 @@ namespace ShaderGraphImporter
                     if (importerSettings.bakeryFeatures)
                     {
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local BAKERY_SH");
-                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local LIGHTMAPPED_SPECULAR");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local BAKERY_MONOSH");
+                        forwardBaseKeywords.AppendLine("#pragma shader_feature_local _LIGHTMAPPED_SPECULAR");
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment BAKERY_PROBESHNONLINEAR");
                     }
                     if (importerSettings.ltcgi)
@@ -337,7 +361,7 @@ namespace ShaderGraphImporter
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LTCGI");
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment LTCGI_DIFFUSE_OFF");
                     }
-                    
+
                     if (importerSettings.bicubicLightmap)
                     {
                         forwardBaseKeywords.AppendLine("#pragma shader_feature_local_fragment _BICUBICLIGHTMAP");
@@ -462,6 +486,65 @@ namespace ShaderGraphImporter
             }
 
             return index;
+        }
+
+        private static string FindAdditionalPass(string[] lines)
+        {
+            var sb = new StringBuilder();
+            bool passFound = false;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var trimmedLine = lines[i].TrimStart();
+
+                if (trimmedLine.Equals("Pass", StringComparison.Ordinal))
+                {
+                    if (passFound)
+                    {
+                        break;
+                    }
+                    passFound = true;
+                }
+
+                if (passFound)
+                {
+
+                    sb.AppendLine(lines[i]);
+
+                    continue;
+                }
+            }
+            return sb.ToString();
+        }
+
+        private static string FindAdditionalProperties(string[] lines)
+        {
+            var sb = new StringBuilder();
+            bool propertiesFound = false;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                var trimmedLine = lines[i].TrimStart();
+
+                if (trimmedLine.Equals("Properties", StringComparison.Ordinal))
+                {
+                    propertiesFound = true;
+                    i+=2;
+                }
+
+                if (trimmedLine.StartsWith("[HideInInspector]_BUILTIN_QueueOffset", StringComparison.Ordinal) || trimmedLine.Equals("}", StringComparison.Ordinal))
+                {
+                    break;
+                }
+                
+
+                if (propertiesFound)
+                {
+                    sb.AppendLine(lines[i]);
+                }
+            }
+
+
+
+            return sb.ToString();
         }
     }
 }

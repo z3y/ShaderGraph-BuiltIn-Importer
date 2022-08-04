@@ -104,7 +104,13 @@ half3 indirectDiffuse = 0;
 
     #if defined(DIRLIGHTMAP_COMBINED)
         float4 lightMapDirection = UNITY_SAMPLE_TEX2D_SAMPLER (unity_LightmapInd, unity_Lightmap, lightmapUV);
-        lightMap = DecodeDirectionalLightmap(lightMap, lightMapDirection, worldNormal);
+        #ifndef BAKERY_MONOSH
+            lightMap = DecodeDirectionalLightmap(lightMap, lightMapDirection, worldNormal);
+        #endif
+    #endif
+
+    #if defined(BAKERY_MONOSH)
+        BakeryMonoSH(lightMap, indirectSpecular, lightmapUV, worldNormal, viewDir, roughness);
     #endif
 
     indirectDiffuse = lightMap;
@@ -137,7 +143,7 @@ half3 indirectDiffuse = 0;
 #endif
 #endif
 
-    #if defined(LIGHTMAPPED_SPECULAR) && defined(UNITY_PASS_FORWARDBASE) && !defined(BAKERY_SH)
+    #if defined(_LIGHTMAPPED_SPECULAR) && defined(UNITY_PASS_FORWARDBASE) && !defined(BAKERY_SH) && !defined(BAKERY_MONOSH)
     {
         float3 bakedDominantDirection = 1.0;
         half3 bakedSpecularColor = 0.0;
